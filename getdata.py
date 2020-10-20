@@ -1,6 +1,5 @@
-import math
 import torch
-
+import numpy as np
 
 def getDynamics(file, num_lines=10):
 
@@ -13,18 +12,17 @@ def getDynamics(file, num_lines=10):
             step = []
             pos = []
             vel = []
-
-            line = line.rstrip().split(' | ')
+            line = line.rstrip().split(" | ")
 
             for i in range(len(line)):
                 p = []
                 v = []
-                cur = line[i].split("\t")
+                cur = line[i].replace(" ", "").replace("|", "").replace("\n", "").split("\t")
 
-                p.append(cur[0])
-                p.append(cur[1])
-                v.append(cur[2])
-                v.append(cur[3])
+                p.append(float(cur[0]))
+                p.append(float(cur[1]))
+                v.append(float(cur[2]))
+                v.append(float(cur[3]))
                 pos.append(p)
                 vel.append(v)
 
@@ -33,7 +31,7 @@ def getDynamics(file, num_lines=10):
             dataset.append(step)
         for j in range(num_lines):
             dataset[j].append(dataset[j+1][0])
-    return dataset[:-1]
+    return np.asarray(dataset[:-1])
 
 
 def getBoundary(dataset, origin=[0, 0], width=100, height=100, gap=2):
@@ -47,10 +45,10 @@ def getBoundary(dataset, origin=[0, 0], width=100, height=100, gap=2):
         pos.append([origin[1]+width, y])
 
 
-    vel = [[math.inf, math.inf]]*len(pos)
+    vel = [[0, 0]]*len(pos)
     step = [pos, vel, pos]
     b = [step]*numofsteps
-    return b
+    return np.asarray(b)
 
 
 class MyDataset(torch.utils.data.Dataset):
@@ -60,15 +58,13 @@ class MyDataset(torch.utils.data.Dataset):
         self.boundary = getBoundary(self.dynamics)
 
     def __getitem__(self, type, time_step):
-        if str(type) == "d":
-            data, gt = self.dynamics[time_step]
-            return data, gt
-        elif str(type) == "b":
-            data, gt = self.boundary[time_step]
-            return data, gt
-        else:
-            print("invalid type")
-            return
+        if type == "d":
+            position, velocity, gt = self.dynamics[time_step-1]
+            return position, velocity, gt
+        elif type == "b":
+            position, velocity, gt = self.boundary[time_step - 1]
+            return position, velocity, gt
+
 
     def __len__(self):
         return len(self.boundary)
@@ -83,8 +79,10 @@ class MyDataset(torch.utils.data.Dataset):
                 f2.write("%s\n" % item)
 
 if __name__ == '__main__':
-    dataset = MyDataset("output.txt", 100)
-    dataset.tofile()
+    dataset = MyDataset("output.txt", 10)
+    print(dataset.dynamics.shape)
+    print(dataset.boundary.shape)
+    print(dataset.__getitem__("d", 10))
 
 
 

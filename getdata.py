@@ -1,6 +1,5 @@
 import math
 import torch
-import pickle
 
 
 def getDynamics(file, num_lines=10):
@@ -8,7 +7,7 @@ def getDynamics(file, num_lines=10):
     dataset = []
 
     with open(file, "r") as f:
-        for i in range(num_lines):
+        for i in range(num_lines+1):
             line = f.readline()
 
             step = []
@@ -29,11 +28,12 @@ def getDynamics(file, num_lines=10):
                 pos.append(p)
                 vel.append(v)
 
-            step.append(pos[:-1])
-            step.append(vel[:-1])
-            step.append(pos[1:])
+            step.append(pos)
+            step.append(vel)
             dataset.append(step)
-    return dataset
+        for j in range(num_lines):
+            dataset[j].append(dataset[j+1][0])
+    return dataset[:-1]
 
 
 def getBoundary(dataset, origin=[0, 0], width=100, height=100, gap=2):
@@ -45,6 +45,7 @@ def getBoundary(dataset, origin=[0, 0], width=100, height=100, gap=2):
     for y in range(origin[1], origin[1]+height, gap):
         pos.append([origin[1], y])
         pos.append([origin[1]+width, y])
+
 
     vel = [[math.inf, math.inf]]*len(pos)
     step = [pos, vel, pos]

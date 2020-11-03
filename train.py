@@ -15,8 +15,8 @@ def main(box_file, particles_file, eval_file, lr=0.0125):
     data_iter = iter(dataset)   # each time step: positions, vels, labels(next_pos)
     with open(box_file, 'rb') as f:
         box_data = pickle.load(f)   # include box_pos, box_normals
-        box_pos = None
-        box_normals = None
+        box_pos = box_data[0]
+        box_normals = box_data[1]
 
     model = MyParticleNetwork()
     model.to(device)
@@ -53,7 +53,7 @@ def main(box_file, particles_file, eval_file, lr=0.0125):
             inputs = (pr_pos1, pr_vel1, None, box_pos, box_normals)
             pr_pos2, pr_vel2 = model(inputs)
 
-            l += 0.5 * loss_fn(pr_pos2, torch.tensor(batch[batch_i][2]),
+            l += 0.5 * loss_fn(pr_pos2, torch.tensor(batch[batch_i][3]),
                                model.num_fluid_neighbors)
 
             losses.append(l)

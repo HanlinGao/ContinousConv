@@ -26,8 +26,13 @@ class MyDataset(torch.utils.data.Dataset):
     def __init__(self, datafile, device):
         super().__init__()
         self.device = device
+        self.dataset = []
         with open(datafile, 'rb') as f:
-            self.dataset = pickle.load(f)
+            while True:
+                try:
+                    self.dataset.extend(pickle.load(f))
+                except:
+                    break
 
     def __getitem__(self, idx):
         pos_matrix = torch.from_numpy(self.dataset[idx][0]).float().to(self.device)
@@ -124,7 +129,7 @@ def main(args):
     valset = MyDataset(os.path.join(args.dataset_path, args.validate_set + '.pkl'), device)
 
     # print('dataset[0]', dataset[0][0])
-
+    print('dataset length: ', len(dataset))
     validate_data = []
     for i in range(5 * args.batch_size, 6 * args.batch_size):
         validate_data.append(valset[i])

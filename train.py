@@ -39,10 +39,10 @@ def loss_fn(pr_pos, gt_pos, num_fluid_neighbors):
                       euclidean_distance(pr_pos, gt_pos) ** gamma)
 
 
-def train(model, optimizer, batch, box_data, batch_size):
+def train(model, optimizer, batch, box_data):
     optimizer.zero_grad()
     losses = []
-    for batch_i in range(batch_size):
+    for batch_i in range(len(batch)):
         inputs = ([
             batch[batch_i][0], batch[batch_i][1], None, box_data[0], box_data[1]
         ])
@@ -57,16 +57,16 @@ def train(model, optimizer, batch, box_data, batch_size):
 
         losses.append(l)
 
-    total_loss = 128 * sum(losses) / batch_size
+    total_loss = 128 * sum(losses) / len(batch)
     total_loss.backward()
     optimizer.step()
 
     return total_loss
 
 
-def validate(model, valset, box_data, batch_size):
+def validate(model, valset, box_data):
     losses = []
-    for batch_i in range(batch_size):
+    for batch_i in range(len(valset)):
         inputs = ([
             valset[batch_i][0], valset[batch_i][1], None, box_data[0], box_data[1]
         ])
@@ -81,7 +81,7 @@ def validate(model, valset, box_data, batch_size):
 
         losses.append(l)
 
-    total_loss = 128 * sum(losses) / batch_size
+    total_loss = 128 * sum(losses) / len(valset)
 
     return total_loss
 
@@ -151,8 +151,8 @@ def main(args):
         validate_l = []
         for i in range(total_batches):
             # current_loss = train(model, optimizer, batches[i], args.batch_size)
-            current_loss = train(model, optimizer, batches[i], box_data, args.batch_size)
-            validate_loss = validate(model, validates[5], box_data, args.batch_size)
+            current_loss = train(model, optimizer, batches[i], box_data)
+            validate_loss = validate(model, validates[5], box_data)
 
             train_l.append(current_loss)
             validate_l.append(validate_loss)
@@ -175,8 +175,8 @@ def main(args):
         print("saving model...")
 
     # loss plot
-    plt.plot(np.arange(1, len(train_l)+1, 1), train_l, "blue")
-    plt.plot(np.arange(1, len(validate_l)+1, 1), validate_l, "red")
+    plt.plot(np.arange(1, len(epoch_tr)+1, 1), epoch_tr, "blue")
+    plt.plot(np.arange(1, len(epoch_val)+1, 1), epoch_val, "red")
     plt.xlabel('epoch')
     plt.ylabel('loss')
     plt.show()

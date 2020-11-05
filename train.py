@@ -65,23 +65,24 @@ def train(model, optimizer, batch, box_data):
 
 
 def validate(model, valset, box_data):
-    losses = []
-    for batch_i in range(len(valset)):
-        inputs = ([
-            valset[batch_i][0], valset[batch_i][1], None, box_data[0], box_data[1]
-        ])
+    with torch.no_grad():
+        losses = []
+        for batch_i in range(len(valset)):
+            inputs = ([
+                valset[batch_i][0], valset[batch_i][1], None, box_data[0], box_data[1]
+            ])
 
-        pr_pos1, pr_vel1 = model(inputs)
-        l = 0.5 * loss_fn(pr_pos1, valset[batch_i][2], model.num_fluid_neighbors)
+            pr_pos1, pr_vel1 = model(inputs)
+            l = 0.5 * loss_fn(pr_pos1, valset[batch_i][2], model.num_fluid_neighbors)
 
-        inputs = (pr_pos1, pr_vel1, None, box_data[0], box_data[1])
-        pr_pos2, pr_vel2 = model(inputs)
+            inputs = (pr_pos1, pr_vel1, None, box_data[0], box_data[1])
+            pr_pos2, pr_vel2 = model(inputs)
 
-        l += 0.5 * loss_fn(pr_pos2, valset[batch_i][3], model.num_fluid_neighbors)
+            l += 0.5 * loss_fn(pr_pos2, valset[batch_i][3], model.num_fluid_neighbors)
 
-        losses.append(l)
+            losses.append(l)
 
-    total_loss = 128 * sum(losses) / len(valset)
+        total_loss = 128 * sum(losses) / len(valset)
 
     return total_loss
 
@@ -157,7 +158,7 @@ def main(args):
             train_l.append(current_loss)
             validate_l.append(validate_loss)
 
-        epoch_tr.append(sum(train_l)/total_batches)
+        epoch_tr.append(sum(train_l) / total_batches)
         epoch_val.append(sum(validate_l) / total_batches)
 
         print('Epoch: {} /Loss: {} /val Loss: {}'.format(epoch, sum(train_l)/total_batches, sum(validate_l) / total_batches))

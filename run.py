@@ -3,6 +3,7 @@ import argparse
 from Model import MyParticleNetwork
 import numpy as np
 import sys
+import pickle
 
 
 def run_sim_torch(box_file, fluids_file, output_file, weight_path, num_step):
@@ -10,18 +11,20 @@ def run_sim_torch(box_file, fluids_file, output_file, weight_path, num_step):
 
     # init the network
     model = MyParticleNetwork()
-    weights =torch.load(weight_path)
+    weights = torch.load(weight_path)
     model.load_state_dict(weights)
     model.to(device)
     model.requires_grad_(False)
 
     # init box and dynamic particles
     with open(box_file, 'rb') as f:
-        box = []
-        box_normals = []
+        box_data = pickle.load(f)
+        box = box_data[0]
+        box_normals = box_data[1]
     with open(fluids_file, 'rb') as f:
-        points = []
-        velocities = []
+        particle_data = pickle.load(f)
+        points = particle_data[0][0]
+        velocities = particle_data[0][1]
 
     # compute lowest point for removing out of bounds particles
     min_y = np.min(box[:, 1]) - 0.05 * (np.max(box[:, 1]) - np.min(box[:, 1]))

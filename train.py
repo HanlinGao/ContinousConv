@@ -124,7 +124,7 @@ def main(args):
     valset = MyDataset(os.path.join(args.dataset_path, args.validate_set + '.pkl'), device)
 
     # print('dataset[0]', dataset[0][0])
-    train_iter = iter(DataLoader(dataset, batch_size=args.batch_size, shuffle=True))
+    train_iter = iter(DataLoader(dataset, batch_size=args.batch_size, shuffle=True, drop_last=True))
 
     validate_data = []
     for i in range(5 * args.batch_size, 6 * args.batch_size):

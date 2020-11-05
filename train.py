@@ -167,14 +167,16 @@ def main(args):
         validate_l = []
 
         for num_batch in range(batches):
-            poses, vels, label1s, label2s = next(train_iter)
-            batch = (poses, vels, label1s, label2s)
+            try:
+                poses, vels, label1s, label2s = next(train_iter)
+                batch = (poses, vels, label1s, label2s)
+                current_loss = train(model, optimizer, batch, box_data)
+                validate_loss = validate(model, validate_data, box_data)
+                train_l.append(current_loss)
+                validate_l.append(validate_loss)
 
-            current_loss = train(model, optimizer, batch, box_data)
-            validate_loss = validate(model, validate_data, box_data)
-
-            train_l.append(current_loss)
-            validate_l.append(validate_loss)
+            except StopIteration:
+                break
 
         epoch_tr.append(sum(train_l) / batches)
         epoch_val.append(sum(validate_l) / batches)

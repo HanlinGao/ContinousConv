@@ -83,7 +83,7 @@ def validate(model, valset, box_data):
             losses.append(l)
 
         total_loss = 128 * sum(losses) / len(valset)
-
+    print('validate: ', valset[0])
     return total_loss
 
 

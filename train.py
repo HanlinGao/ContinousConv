@@ -179,7 +179,7 @@ def main(args):
         epoch_tr.append(sum(train_l) / batches)
         epoch_val.append(sum(validate_l) / batches)
 
-        print('Epoch: {} /Loss: {} /val Loss: {}'.format(epoch, sum(train_l)/total_batches, sum(validate_l) / total_batches))
+        print('Epoch: {} /Loss: {} /val Loss: {}'.format(epoch, sum(train_l)/batches, sum(validate_l) / batches))
         # print('Epoch: {} /Loss: {}'.format(epoch, current_loss))
 
         # early_stopping needs the validation loss to check if it has decresed,

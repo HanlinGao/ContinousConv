@@ -77,7 +77,7 @@ def train(model, optimizer, batch, box_data):
 
         losses.append(l)
 
-    total_loss = 128 * sum(losses) / len(batch)
+    total_loss = 128 * sum(losses) / len(batch[0])
     total_loss.backward()
     optimizer.step()
 

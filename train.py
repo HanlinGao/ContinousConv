@@ -6,16 +6,36 @@ from Model import MyParticleNetwork
 import matplotlib.pyplot as plt
 import os
 import pickle
+from torch.utils.data import Dataset, DataLoader
+
+
+# def toBatch(Dataset, batchsize, device):
+#     new_dataset = []
+#     for each_step in Dataset.dataset:
+#         step = [torch.from_numpy(x).float().to(device) for x in each_step]
+#         new_dataset.append(step)
+#
+#     batches = []
+#     l = len(Dataset)
+#     for i in range(0, l, batchsize):
+#         batches.append(new_dataset[i: i+batchsize])
+#     return batches
 
 
 class MyDataset(torch.utils.data.Dataset):
-    def __init__(self, datafile):
+    def __init__(self, datafile, device):
         super().__init__()
+        self.device = device
         with open(datafile, 'rb') as f:
             self.dataset = pickle.load(f)
 
     def __getitem__(self, idx):
-        return self.dataset[idx]
+        pos_matrix = torch.from_numpy(self.dataset[idx][0]).float().to(self.device)
+        vel_matrix = torch.from_numpy(self.dataset[idx][1]).float().to(self.device)
+        label1 = torch.from_numpy(self.dataset[idx][2]).float().to(self.device)
+        label2 = torch.from_numpy(self.dataset[idx][3]).float().to(self.device)
+
+        return pos_matrix, vel_matrix, label1, label2
 
     def __len__(self):
         return len(self.dataset)
@@ -42,18 +62,18 @@ def loss_fn(pr_pos, gt_pos, num_fluid_neighbors):
 def train(model, optimizer, batch, box_data):
     optimizer.zero_grad()
     losses = []
-    for batch_i in range(len(batch)):
+    for batch_i in range(len(batch[0])):
         inputs = ([
-            batch[batch_i][0], batch[batch_i][1], None, box_data[0], box_data[1]
+            batch[0][batch_i], batch[1][batch_i], None, box_data[0], box_data[1]
         ])
 
         pr_pos1, pr_vel1 = model(inputs)
-        l = 0.5 * loss_fn(pr_pos1, batch[batch_i][2], model.num_fluid_neighbors)
+        l = 0.5 * loss_fn(pr_pos1, batch[2][batch_i], model.num_fluid_neighbors)
 
         inputs = (pr_pos1, pr_vel1, None, box_data[0], box_data[1])
         pr_pos2, pr_vel2 = model(inputs)
 
-        l += 0.5 * loss_fn(pr_pos2, batch[batch_i][3], model.num_fluid_neighbors)
+        l += 0.5 * loss_fn(pr_pos2, batch[3][batch_i], model.num_fluid_neighbors)
 
         losses.append(l)
 
@@ -83,21 +103,8 @@ def validate(model, valset, box_data):
             losses.append(l)
 
         total_loss = 128 * sum(losses) / len(valset)
-    print('validate: ', valset[0])
+    # print('validate: ', valset[0])
     return total_loss
-
-
-def toBatch(Dataset, batchsize, device):
-    new_dataset = []
-    for each_step in Dataset.dataset:
-        step = [torch.from_numpy(x).float().to(device) for x in each_step]
-        new_dataset.append(step)
-
-    batches = []
-    l = len(Dataset)
-    for i in range(0, l, batchsize):
-        batches.append(new_dataset[i: i+batchsize])
-    return batches
 
 
 def main(args):
@@ -113,9 +120,12 @@ def main(args):
     # testset = MyDataset(os.path.join(args.dataset_path, args.validate_set + '.txt'), 200).dataset
 
     print('data preparing....')
-    dataset = MyDataset(os.path.join(args.dataset_path, args.train_set + '.pkl'))
-    valset = MyDataset(os.path.join(args.dataset_path, args.validate_set + '.pkl'))
+    dataset = MyDataset(os.path.join(args.dataset_path, args.train_set + '.pkl'), device)
+    valset = MyDataset(os.path.join(args.dataset_path, args.validate_set + '.pkl'), device)
 
+    train_iter = iter(DataLoader(dataset, batch_size=args.batch_size, shuffle=True))
+    # val_iter = iter(DataLoader(valset, batch_size=args.batch_size, shuffle=True))
+    validate_data = valset[5 * args.batch_size: 6 * args.batch_size]
     with open(os.path.join(args.dataset_path, args.box_data + '.pkl'), 'rb') as f:
         box_data = pickle.load(f)  # include box_pos, box_normals
 
@@ -137,11 +147,12 @@ def main(args):
     # early_stopping = EarlyStopping(patience=100, verbose=True, path=os.path.join(args.model_path, args.model_name + '.pt'))
 
     # get batches and steps
-    batches = toBatch(dataset, args.batch_size, device)
-    validates = toBatch(valset, args.batch_size, device)
+    # batches = toBatch(dataset, args.batch_size, device)
+    # validates = toBatch(valset, args.batch_size, device)
 
+    batches = len(dataset) / args.batch_size + 1
     print('Done.')
-    total_batches = len(batches)
+    # total_batches = len(batches)
 
     epoch_tr = []
     epoch_val = []
@@ -150,16 +161,19 @@ def main(args):
     for epoch in range(args.num_epochs):
         train_l = []
         validate_l = []
-        for i in range(total_batches):
-            # current_loss = train(model, optimizer, batches[i], args.batch_size)
-            current_loss = train(model, optimizer, batches[i], box_data)
-            validate_loss = validate(model, validates[5], box_data)
+
+        for num_batch in range(batches):
+            poses, vels, label1s, label2s = next(train_iter)
+            batch = (poses, vels, label1s, label2s)
+
+            current_loss = train(model, optimizer, batch, box_data)
+            validate_loss = validate(model, validate_data, box_data)
 
             train_l.append(current_loss)
             validate_l.append(validate_loss)
 
-        epoch_tr.append(sum(train_l) / total_batches)
-        epoch_val.append(sum(validate_l) / total_batches)
+        epoch_tr.append(sum(train_l) / batches)
+        epoch_val.append(sum(validate_l) / batches)
 
         print('Epoch: {} /Loss: {} /val Loss: {}'.format(epoch, sum(train_l)/total_batches, sum(validate_l) / total_batches))
         # print('Epoch: {} /Loss: {}'.format(epoch, current_loss))

@@ -139,7 +139,7 @@ def main(args):
     model.to(device)
 
     optimizer = torch.optim.Adam(model.parameters(),
-                                 lr=0.001,
+                                 lr=args.lr,
                                  eps=1e-6)
 
     if os.path.isfile(os.path.join(args.model_path, args.model_name + '.pt')):
@@ -191,7 +191,8 @@ def main(args):
         # if early_stopping.early_stop:
         #     print("Early stopping")
         #     break
-        torch.save(model.state_dict(), os.path.join(args.model_path, args.model_name + '_epoch_' + str(epoch) + '.pt'))
+        torch.save(model.state_dict(), os.path.join(args.model_path, args.model_name + '_epoch_' + str(epoch) +
+                                                    '_lr_' + str(args.lr) + '.pt'))
         print("saving model...")
 
     # loss plot
@@ -217,5 +218,6 @@ if __name__ == '__main__':
     parser.add_argument('--num_epochs', type=int, default=100)
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--model_name', type=str, default="ourmodel")
+    parser.add_argument('--lr', type=float, default=0.0125)
     args = parser.parse_args()
     main(args)

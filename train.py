@@ -154,7 +154,7 @@ def main(args):
     # batches = toBatch(dataset, args.batch_size, device)
     # validates = toBatch(valset, args.batch_size, device)
 
-    batches = len(dataset) / args.batch_size + 1
+    batches = len(dataset) // args.batch_size + 1
     print('Done.')
     # total_batches = len(batches)
 

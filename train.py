@@ -89,7 +89,7 @@ def validate(model, valset, box_data, batch_size):
 def toBatch(Dataset, batchsize, device):
     new_dataset = []
     for each_step in Dataset.dataset:
-        step = [torch.from_numpy(x).to(device) for x in each_step]
+        step = [torch.from_numpy(x).float().to(device) for x in each_step]
         new_dataset.append(step)
 
     batches = []
@@ -117,7 +117,7 @@ def main(args):
     with open(os.path.join(args.dataset_path, args.box_data + '.pkl'), 'rb') as f:
         box_data = pickle.load(f)  # include box_pos, box_normals
 
-    box_data = [torch.from_numpy(x) for x in box_data]
+    box_data = [torch.from_numpy(x).float().to(device) for x in box_data]
 
     # define model and optimizer
     model = create_model()

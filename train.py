@@ -123,10 +123,13 @@ def main(args):
     dataset = MyDataset(os.path.join(args.dataset_path, args.train_set + '.pkl'), device)
     valset = MyDataset(os.path.join(args.dataset_path, args.validate_set + '.pkl'), device)
 
-    print('dataset[0]', dataset[0][0])
+    # print('dataset[0]', dataset[0][0])
     train_iter = iter(DataLoader(dataset, batch_size=args.batch_size, shuffle=True))
-    # val_iter = iter(DataLoader(valset, batch_size=args.batch_size, shuffle=True))
-    validate_data = valset[5 * args.batch_size: 6 * args.batch_size]
+
+    validate_data = []
+    for i in range(5 * args.batch_size, 6 * args.batch_size):
+        validate_data.append(valset[i])
+
     with open(os.path.join(args.dataset_path, args.box_data + '.pkl'), 'rb') as f:
         box_data = pickle.load(f)  # include box_pos, box_normals
 

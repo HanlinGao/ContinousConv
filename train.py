@@ -44,19 +44,16 @@ def train(model, optimizer, batch, box_data, batch_size):
     losses = []
     for batch_i in range(batch_size):
         inputs = ([
-            torch.tensor(batch[batch_i][0], dtype=torch.float32), torch.tensor(batch[batch_i][1], dtype=torch.float32), None,
-            torch.tensor(box_data[0], dtype=torch.float32), torch.tensor(box_data[1], dtype=torch.float32)
+            batch[batch_i][0], batch[batch_i][1], None, box_data[0], box_data[1]
         ])
 
         pr_pos1, pr_vel1 = model(inputs)
-        l = 0.5 * loss_fn(pr_pos1, torch.tensor(batch[batch_i][2], dtype=torch.float32),
-                          model.num_fluid_neighbors)
+        l = 0.5 * loss_fn(pr_pos1, batch[batch_i][2], model.num_fluid_neighbors)
 
-        inputs = (pr_pos1, pr_vel1, None, torch.tensor(box_data[0], dtype=torch.float32), torch.tensor(box_data[1], dtype=torch.float32))
+        inputs = (pr_pos1, pr_vel1, None, box_data[0], box_data[1])
         pr_pos2, pr_vel2 = model(inputs)
 
-        l += 0.5 * loss_fn(pr_pos2, torch.tensor(batch[batch_i][3], dtype=torch.float32),
-                           model.num_fluid_neighbors)
+        l += 0.5 * loss_fn(pr_pos2, batch[batch_i][3], model.num_fluid_neighbors)
 
         losses.append(l)
 
@@ -71,19 +68,16 @@ def validate(model, valset, box_data, batch_size):
     losses = []
     for batch_i in range(batch_size):
         inputs = ([
-            torch.tensor(valset[batch_i][0], dtype=torch.float32), torch.tensor(valset[batch_i][1], dtype=torch.float32), None,
-            torch.tensor(box_data[0], dtype=torch.float32), torch.tensor(box_data[1], dtype=torch.float32)
+            valset[batch_i][0], valset[batch_i][1], None, box_data[0], box_data[1]
         ])
 
         pr_pos1, pr_vel1 = model(inputs)
-        l = 0.5 * loss_fn(pr_pos1, torch.tensor(valset[batch_i][2], dtype=torch.float32),
-                          model.num_fluid_neighbors)
+        l = 0.5 * loss_fn(pr_pos1, valset[batch_i][2], model.num_fluid_neighbors)
 
-        inputs = (pr_pos1, pr_vel1, None, torch.tensor(box_data[0], dtype=torch.float32), torch.tensor(box_data[1], dtype=torch.float32))
+        inputs = (pr_pos1, pr_vel1, None, box_data[0], box_data[1])
         pr_pos2, pr_vel2 = model(inputs)
 
-        l += 0.5 * loss_fn(pr_pos2, torch.tensor(valset[batch_i][3], dtype=torch.float32),
-                           model.num_fluid_neighbors)
+        l += 0.5 * loss_fn(pr_pos2, valset[batch_i][3], model.num_fluid_neighbors)
 
         losses.append(l)
 
@@ -92,9 +86,17 @@ def validate(model, valset, box_data, batch_size):
     return total_loss
 
 
-def toBatch(data, batchsize):
-    l = len(data)
-    return np.asarray(np.array_split(data, l / batchsize))
+def toBatch(Dataset, batchsize, device):
+    new_dataset = []
+    for each_step in Dataset.dataset:
+        step = [torch.from_numpy(x).to(device) for x in each_step]
+        new_dataset.append(step)
+
+    batches = []
+    l = len(Dataset)
+    for i in range(0, l, batchsize):
+        batches.append(new_dataset[i: i+batchsize])
+    return batches
 
 
 def main(args):
@@ -115,6 +117,8 @@ def main(args):
     with open(os.path.join(args.dataset_path, args.box_data + '.pkl'), 'rb') as f:
         box_data = pickle.load(f)  # include box_pos, box_normals
 
+    box_data = [torch.from_numpy(x) for x in box_data]
+
     # define model and optimizer
     model = create_model()
     model.to(device)
@@ -131,10 +135,10 @@ def main(args):
     # early_stopping = EarlyStopping(patience=100, verbose=True, path=os.path.join(args.model_path, args.model_name + '.pt'))
 
     # get batches and steps
-    batches = toBatch(dataset, args.batch_size)
-    validates = toBatch(valset, args.batch_size)
-
-    total_step = len(batches)
+    batches = toBatch(dataset, args.batch_size, device)
+    validates = toBatch(valset, args.batch_size, device)
+    
+    total_batches = len(batches)
 
     epoch_tr = []
     epoch_val = []
@@ -143,7 +147,7 @@ def main(args):
     for epoch in range(args.num_epochs):
         train_l = []
         validate_l = []
-        for i in range(total_step):
+        for i in range(total_batches):
             # current_loss = train(model, optimizer, batches[i], args.batch_size)
             current_loss = train(model, optimizer, batches[i], box_data, args.batch_size)
             validate_loss = validate(model, validates[5], box_data, args.batch_size)
@@ -151,10 +155,10 @@ def main(args):
             train_l.append(current_loss)
             validate_l.append(validate_loss)
 
-        epoch_tr.append(sum(train_l)/total_step)
-        epoch_val.append(sum(validate_l) / total_step)
+        epoch_tr.append(sum(train_l)/total_batches)
+        epoch_val.append(sum(validate_l) / total_batches)
 
-        print('Epoch: {} /Loss: {} /val Loss: {}'.format(epoch, sum(train_l)/total_step, sum(validate_l) / total_step))
+        print('Epoch: {} /Loss: {} /val Loss: {}'.format(epoch, sum(train_l)/total_batches, sum(validate_l) / total_batches))
         # print('Epoch: {} /Loss: {}'.format(epoch, current_loss))
 
         # early_stopping needs the validation loss to check if it has decresed,

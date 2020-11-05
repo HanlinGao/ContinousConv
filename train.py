@@ -111,6 +111,7 @@ def main(args):
     # dataset = MyDataset(os.path.join(args.dataset_path, args.train_set + '.txt'), 200).dataset
     # testset = MyDataset(os.path.join(args.dataset_path, args.validate_set + '.txt'), 200).dataset
 
+    print('data preparing....')
     dataset = MyDataset(os.path.join(args.dataset_path, args.train_set + '.pkl'))
     valset = MyDataset(os.path.join(args.dataset_path, args.validate_set + '.pkl'))
 
@@ -137,7 +138,8 @@ def main(args):
     # get batches and steps
     batches = toBatch(dataset, args.batch_size, device)
     validates = toBatch(valset, args.batch_size, device)
-    
+
+    print('Done.')
     total_batches = len(batches)
 
     epoch_tr = []

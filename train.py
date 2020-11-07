@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import os
 import pickle
 from torch.utils.data import Dataset, DataLoader
+import datetime
 
 
 # def toBatch(Dataset, batchsize, device):
@@ -30,7 +31,7 @@ class MyDataset(torch.utils.data.Dataset):
         with open(datafile, 'rb') as f:
             while True:
                 try:
-                    self.dataset.extend(pickle.load(f)[:800])
+                    self.dataset.extend(pickle.load(f))
                 except:
                     break
 
@@ -214,7 +215,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_path', type=str, default='models/', help='path for saving trained models')
-    parser.add_argument('--dataset_path', type=str, default='dataset', help='apic2d dataset')
+    parser.add_argument('--dataset_path', type=str, default='datasets', help='apic2d dataset')
     parser.add_argument('--train_set', type=str, default='fluid_train', help='path for train set')
     parser.add_argument('--box_data', type=str, default='box_train', help='boundary')
     parser.add_argument('--validate_set', type=str, default='fluid_evaluation', help='path for validate set')
@@ -222,7 +223,7 @@ if __name__ == '__main__':
     # Model parameters
     parser.add_argument('--num_epochs', type=int, default=100)
     parser.add_argument('--batch_size', type=int, default=32)
-    parser.add_argument('--model_name', type=str, default="ourmodel")
+    parser.add_argument('--model_name', type=str, default=datetime.date.today().month + datetime.date.today().day)
     parser.add_argument('--lr', type=float, default=0.0125)
     args = parser.parse_args()
     main(args)

@@ -223,7 +223,7 @@ if __name__ == '__main__':
     # Model parameters
     parser.add_argument('--num_epochs', type=int, default=100)
     parser.add_argument('--batch_size', type=int, default=32)
-    parser.add_argument('--model_name', type=str, default=datetime.date.today().month + datetime.date.today().day)
+    parser.add_argument('--model_name', type=str, default=str(datetime.date.today().month) + str(datetime.date.today().day))
     parser.add_argument('--lr', type=float, default=0.0125)
     args = parser.parse_args()
     main(args)

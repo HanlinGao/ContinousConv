@@ -27,9 +27,25 @@ def read_origin_data(file):
     return box, points
 
 
-box, points = read_origin_data('origin.pkl')
+def read_numpy_data(file):
+    points = []
+    with open(file, 'rb') as f:
+        while True:
+            try:
+                data = np.load(f)
+                points.append(data)
+            except:
+                break
+    return points
+
+
+# box, points = read_origin_data('origin.pkl')
+with open('box_train.pkl', 'rb') as f:
+    box_data = pickle.load(f)
+    box = box_data[0]
+points = read_numpy_data('prediction.npy')
 print('box', box)
-print('points', points)
+print('points', points[0])
 
 fig = plt.figure()
 # plt.xlim(-100, 100)

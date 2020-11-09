@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
-def get_particle_data(file, save_file, num_lines=10):
+def get_particle_data(file, save_file, num_lines=200):
     # map origin data -> [[pos_x, pos_y, pos_z], [vel_x, vel_y, vel_z], [x_label, y_label, z_label]]
     # suitable for training data, but not for reading by human
     dataset = []
@@ -12,11 +12,9 @@ def get_particle_data(file, save_file, num_lines=10):
         # get one time step data
         for each_step in range(num_lines+2):
             line = f.readline()
-
             pos = []    # in the form of [[pos_1, ], [pos_2, ], ..[pos_n, ]]
             vel = []    # in the form of [[vel_1, ], [vel_2, ], ..[vel_n, ]]
             particles = line.rstrip().split('|')
-
             # since some lines end with '|', which will generate '', needing filtering
             particles = list(filter(lambda x: x, particles))
 
@@ -292,7 +290,7 @@ def normal_analysis(normals_file, box_pos_file):
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.set_zlabel('z')
-    plt.interactive(True)
+    # plt.interactive(True)
     plt.show()
 
 
@@ -469,18 +467,136 @@ def readable_fluids(fluids_file):
     return
 
 
+def add_training_data(origin_file, training_data):
+    # as for initialization, make x, z in range of [-0.5, 0.5], y in range of [0, 1.5]
+    # core idea and goal is to make the whole range as pos in [-1, 1], vel in [-4, 4]
+    x_target_l = -1
+    x_target_up = 1
+
+    y_target_l = 0
+    y_target_up = 4
+
+    vel_target_l = -4
+    vel_target_up = 4
+
+    with open(origin_file, 'rb') as f:
+        dataset = pickle.load(f)
+
+    # calculate situation of pos
+    x_min, x_max, x_sum = 100, -100, 0
+    y_min, y_max, y_sum = 100, -100, 0
+    z_min, z_max, z_sum = 100, -100, 0
+    count = 0
+    for each_step in dataset:  # [pos_matrix, vel_matrix, label_matrix(t+1), label_matrix(t+2)]
+        for particle in each_step[0]:  # [x, y, z]
+            count += 1
+            if particle[0] < x_min:
+                x_min = particle[0]
+            if particle[0] > x_max:
+                x_max = particle[0]
+            x_sum += particle[0]
+
+            if particle[1] < y_min:
+                y_min = particle[1]
+            if particle[1] > y_max:
+                y_max = particle[1]
+            y_sum += particle[1]
+
+            if particle[2] < z_min:
+                z_min = particle[2]
+            if particle[2] > z_max:
+                z_max = particle[2]
+            z_sum += particle[2]
+
+    print('positions situation: ')
+    print('x_max: ', x_max, 'x_min: ', x_min, 'x_mean: ', x_sum / count)
+    print('y_max: ', y_max, 'y_min: ', y_min, 'y_mean: ', y_sum / count)
+    print('z_max: ', z_max, 'z_min: ', z_min, 'z_mean: ', z_sum / count)
+    # calculate situation of velocity
+    vel_min = 100
+    vel_max = -100
+    for each_step in dataset:
+        max_temp = np.max(each_step[1])
+        min_temp = np.min(each_step[1])
+        if max_temp > vel_max:
+            vel_max = max_temp
+        if min_temp < vel_min:
+            vel_min = min_temp
+
+    print(dataset[2][0])
+    res = []
+    # normalize x into [-1, 1], y into [0, 4]
+    for each_step in dataset:  # [pos_matrix, vel_matrix, label_matrix(t+1), label_matrix(t+2)]
+        # normalize pos_matrix
+        each_step[0][:, 0] = x_target_l + (x_target_up - x_target_l) / (x_max - x_min) * (each_step[0][:, 0] - x_min)
+        each_step[0][:, 1] = y_target_l + (y_target_up - y_target_l) / (y_max - y_min) * (each_step[0][:, 1] - y_min)
+
+        # normalize label_matrix
+        each_step[2][:, 0] = x_target_l + (x_target_up - x_target_l) / (x_max - x_min) * (each_step[2][:, 0] - x_min)
+        each_step[2][:, 1] = y_target_l + (y_target_up - y_target_l) / (y_max - y_min) * (each_step[2][:, 1] - y_min)
+
+        each_step[3][:, 0] = x_target_l + (x_target_up - x_target_l) / (x_max - x_min) * (each_step[3][:, 0] - x_min)
+        each_step[3][:, 1] = y_target_l + (y_target_up - y_target_l) / (y_max - y_min) * (each_step[3][:, 1] - y_min)
+
+        # normalize vel_matrix
+        each_step[1][:, :2] = vel_target_l + (vel_target_up - vel_target_l) / (vel_max - vel_min) * \
+                              (each_step[1][:, :2] - vel_min)
+
+        res.append(each_step)
+    # save the normalized trianing data into .pkl file
+    print(res[2][0])
+    with open(training_data, 'ab') as f:
+        pickle.dump(res, f)
+
+    return
 
 
 # get_particle_data('apic2d_data.txt', 'apic2d_data.pkl', 200)
 # apic_2d_data_clean('apic2d_data.pkl', 'apic2d_data_clean.txt')
+# data_normalization('apic2d_data.pkl', 'fluid_train.pkl')
 # normal_analysis('box_normals.out', 'box.out')
 
 # fluid_init_analysis('fluid_pos.txt', 'fluid_vel.txt')
 # pos_x, pos_z: [-0.5, 0.5], pos_y: [0.5, 1.5], vel_x and vel_z has a 0.2~0.3 small value
 
 # fluid_range_analysis('fluid_pos.txt', 'fluid_vel.txt')
-# data_normalization('apic2d_data.pkl', 'fluid_train.pkl')
-# readable_fluids('fluid_train.pkl')
-# boundary particles generation
-# boundary_generation('box_train.pkl')
-# boundary_generation_no_wall('box_train_no_wall.pkl')
+
+# # readable_fluids('fluid_train.pkl')
+# # boundary particles generation
+# # boundary_generation('box_train.pkl')
+# # boundary_generation_no_wall('box_train_no_wall.pkl')
+#
+
+# get_particle_data('apic1.txt', 'apic1.pkl')
+# data_normalization('apic1.pkl', 'fluid_train.pkl')
+# get_particle_data('apic2.txt', 'apic2.pkl')
+# add_training_data('apic2.pkl', 'fluid_train.pkl')
+# get_particle_data('apic3.txt', 'apic3.pkl')
+# add_training_data('apic3.pkl', 'fluid_train.pkl')
+# get_particle_data('apic4.txt', 'apic4.pkl')
+# add_training_data('apic4.pkl', 'fluid_train.pkl')
+# get_particle_data('apic5.txt', 'apic5.pkl')
+# add_training_data('apic5.pkl', 'fluid_train.pkl')
+# get_particle_data('apic6.txt', 'apic6.pkl')
+# add_training_data('apic6.pkl', 'fluid_train.pkl')
+# get_particle_data('apic7.txt', 'apic7.pkl')
+# add_training_data('apic7.pkl', 'fluid_train.pkl')
+# get_particle_data('apic8.txt', 'apic8.pkl')
+# add_training_data('apic8.pkl', 'fluid_train.pkl')
+# get_particle_data('apic9.txt', 'apic9.pkl')
+# add_training_data('apic9.pkl', 'fluid_train.pkl')
+# get_particle_data('apic10.txt', 'apic10.pkl')
+# add_training_data('apic10.pkl', 'fluid_train.pkl')
+get_particle_data('apic12.txt', 'apic12.pkl')
+add_training_data('apic12.pkl', 'fluid_train.pkl')
+get_particle_data('apic13.txt', 'apic13.pkl')
+add_training_data('apic13.pkl', 'fluid_train.pkl')
+# dataset = []
+# with open('fluid_train.pkl', 'rb') as f:
+#     while True:
+#         try:
+#             data = pickle.load(f)
+#             print(len(data))
+#             # dataset.extend(pickle.load(f))
+#         except:
+#             break

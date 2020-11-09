@@ -207,7 +207,7 @@ def main(args):
     plt.xlabel('epoch')
     plt.ylabel('loss')
     plt.show()
-    plt.savefig('out/loss_new' + 'epoch_' + str(args.num_epochs) + '_lr_' + str(args.lr) + '.png')
+    plt.savefig(str(datetime.date.today().month) + str(datetime.date.today().day) + 'epoch_' + str(args.num_epochs) + '_lr_' + str(args.lr) + '.png')
     print("loss plot saved")
     print("Finished, model saved")
 

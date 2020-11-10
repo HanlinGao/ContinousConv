@@ -214,7 +214,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str, default='models/', help='path for saving trained models')
+    parser.add_argument('--model_path', type=str, default='continue/', help='path for saving trained models')
     parser.add_argument('--dataset_path', type=str, default='datasets', help='apic2d dataset')
     parser.add_argument('--train_set', type=str, default='fluid_train', help='path for train set')
     parser.add_argument('--box_data', type=str, default='box_train', help='boundary')

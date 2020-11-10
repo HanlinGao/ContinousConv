@@ -11,7 +11,7 @@ def run_sim_torch(box_file, fluids_file, output_file, weight_path, num_step):
 
     # init the network
     model = MyParticleNetwork()
-    weights = torch.load(weight_path)
+    weights = torch.load(weight_path, map_location=torch.device('cpu'))
     model.load_state_dict(weights)
     model.to(device)
     model.requires_grad_(False)
@@ -29,8 +29,8 @@ def run_sim_torch(box_file, fluids_file, output_file, weight_path, num_step):
     # compute lowest point for removing out of bounds particles
     min_y = np.min(box[:, 1]) - 0.05 * (np.max(box[:, 1]) - np.min(box[:, 1]))
 
-    box = torch.from_numpy(box).to(device)
-    box_normals = torch.from_numpy(box_normals).to(device)
+    box = torch.from_numpy(box).float().to(device)
+    box_normals = torch.from_numpy(box_normals).float().to(device)
     fluids = [(points, velocities, range(0, 1))]
 
     pos = np.empty(shape=(0, 3), dtype=np.float32)
@@ -45,8 +45,8 @@ def run_sim_torch(box_file, fluids_file, output_file, weight_path, num_step):
 
             if pos.shape[0]:
                 np.save(output_file, pos)
-                inputs = (torch.from_numpy(pos).to(device),
-                          torch.from_numpy(vel).to(device), None, box, box_normals)
+                inputs = (torch.from_numpy(pos).float().to(device),
+                          torch.from_numpy(vel).float().to(device), None, box, box_normals)
 
                 pos, vel = model(inputs)
                 pos = pos.cpu().numpy()

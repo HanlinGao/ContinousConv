@@ -14,7 +14,7 @@ class MyParticleNetwork(torch.nn.Module):
         interpolation='linear',
         use_window=True,
         particle_radius=0.025,
-        timestep=1 / 50,
+        timestep=0.005,
         other_feats_channels=0,
     ):
         super().__init__()

@@ -36,6 +36,9 @@ def run_sim_torch(box_file, fluids_file, output_file, weight_path, num_step):
     pos = np.empty(shape=(0, 3), dtype=np.float32)
     vel = np.empty_like(pos)
 
+    print(len(box))
+    print(box[:100])
+
     with open(output_file, 'wb') as f:
         for step in range(num_step):
             for point, velocities, range_ in fluids:
@@ -44,7 +47,8 @@ def run_sim_torch(box_file, fluids_file, output_file, weight_path, num_step):
                     vel = np.concatenate([vel, velocities], axis=0)
 
             if pos.shape[0]:
-                np.save(output_file, pos)
+                # print('save', pos)
+                np.save(f, pos)
                 inputs = (torch.from_numpy(pos).float().to(device),
                           torch.from_numpy(vel).float().to(device), None, box, box_normals)
 

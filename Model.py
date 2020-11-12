@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 import open3d.ml.torch as ml3d
 import numpy as np
-
+import math
 
 class MyParticleNetwork(torch.nn.Module):
 
@@ -13,8 +13,8 @@ class MyParticleNetwork(torch.nn.Module):
         coordinate_mapping='ball_to_cube_volume_preserving',
         interpolation='linear',
         use_window=True,
-        particle_radius=0.025,
-        timestep=0.005,
+        particle_radius=0.024,
+        timestep=0.02,
         other_feats_channels=0,
     ):
         super().__init__()

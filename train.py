@@ -197,7 +197,12 @@ def main(args):
         # if early_stopping.early_stop:
         #     print("Early stopping")
         #     break
-        torch.save(model.state_dict(), os.path.join(args.model_path, args.model_name + '_epoch_' + str(epoch) +
+        if '_' in args.model_name:
+            index = args.model_name.find('_')
+            model_name = args.model_name[:index]
+        else:
+            model_name = args.model_name
+        torch.save(model.state_dict(), os.path.join(args.model_path, model_name + '_epoch_' + str(epoch) +
                                                     '_lr_' + str(args.lr) + '.pt'))
         print("saving model...")
 

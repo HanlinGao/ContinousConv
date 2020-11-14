@@ -13,7 +13,7 @@ class MyParticleNetwork(torch.nn.Module):
         coordinate_mapping='ball_to_cube_volume_preserving',
         interpolation='linear',
         use_window=True,
-        particle_radius=0.024,
+        particle_radius=0.025,
         timestep=0.02,
         other_feats_channels=0,
     ):

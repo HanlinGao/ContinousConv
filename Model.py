@@ -170,5 +170,5 @@ class MyParticleNetwork(torch.nn.Module):
             pos2, vel2, feats, box, box_feats, fixed_radius_search_hash_table)
         pos2_corrected, vel2_corrected = self.compute_new_pos_vel(
             pos, vel, pos2, vel2, pos_correction)
-        print(self.num_fluid_neighbors)
+        # print(self.num_fluid_neighbors)
         return pos2_corrected, vel2_corrected

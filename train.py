@@ -132,7 +132,7 @@ def main(args):
     # print('dataset[0]', dataset[0][0])
     print('dataset length: ', len(dataset))
     validate_data = []
-    for i in range(5 * args.batch_size, 6 * args.batch_size):
+    for i in range(0, args.batch_size):
         validate_data.append(valset[i])
 
     with open(os.path.join(args.dataset_path, args.box_data + '.pkl'), 'rb') as f:

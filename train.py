@@ -107,7 +107,7 @@ def main(args):
 
     # define device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
+    print("Using device: ", device)
     # load dataset
     # dataset = MyDataset(os.path.join(args.dataset_path, args.train_set + '.txt'), 200).dataset
     # testset = MyDataset(os.path.join(args.dataset_path, args.validate_set + '.txt'), 200).dataset
@@ -207,7 +207,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str, default='models/', help='path for saving trained models')
+    parser.add_argument('--model_path', type=str, default='continue/', help='path for saving trained models')
     parser.add_argument('--dataset_path', type=str, default='dataset/input_train', help='apic2d dataset')
     parser.add_argument('--train_set', type=str, default='train_10p_long2', help='path for train set')
     parser.add_argument('--box_data', type=str, default='box_train', help='boundary')

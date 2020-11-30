@@ -156,7 +156,7 @@ def boundary_generation(box_save_file):
 
     # generate front and back
     x = np.arange(-1, 1, 0.05)
-    y = np.arange(0, 4, 0.05)
+    y = np.arange(0, 2, 0.05)
     xv, yv = np.meshgrid(x, y)
 
     for each_pair in zip(xv.flatten(), yv.flatten()):
@@ -563,11 +563,9 @@ def add_training_data(origin_file, training_data):
 
 # # readable_fluids('fluid_train.pkl')
 # # boundary particles generation
-# # boundary_generation('box_train.pkl')
-# # boundary_generation_no_wall('box_train_no_wall.pkl')
+# boundary_generation('box_train.pkl')
 #
-
-# # get_particle_data('apic1.txt', 'apic1.pkl')
+# get_particle_data('apic1.txt', 'apic1.pkl')
 # data_normalization('apic1.pkl', 'fluid_train.pkl')
 # # get_particle_data('apic2.txt', 'apic2.pkl')
 # add_training_data('apic2.pkl', 'fluid_train.pkl')
@@ -589,14 +587,17 @@ def add_training_data(origin_file, training_data):
 # add_training_data('apic10.pkl', 'fluid_train.pkl')
 # # get_particle_data('apic12.txt', 'apic12.pkl')
 # add_training_data('apic12.pkl', 'fluid_train.pkl')
-data_normalization('apic13.pkl', 'fluid_evaluation.pkl')
+# data_normalization('apic13.pkl', 'fluid_evaluation.pkl')
 
-# dataset = []
-# with open('fluid_train.pkl', 'rb') as f:
-#     while True:
-#         try:
-#             data = pickle.load(f)
-#             print(len(data))
-#             # dataset.extend(pickle.load(f))
-#         except:
-#             break
+
+
+dataset = []
+with open('datasets/fluid_train.pkl', 'rb') as f:
+    while True:
+        try:
+            data = pickle.load(f)
+            print(len(data))
+            dataset.extend(data)
+        except:
+            break
+print(dataset[0][0])

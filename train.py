@@ -176,8 +176,8 @@ def main(args):
                 batch = (poses, vels, label1s, label2s)
                 current_loss = train(model, optimizer, batch, box_data)
                 validate_loss = validate(model, validate_data, box_data)
-                train_l.append(current_loss)
-                validate_l.append(validate_loss)
+                train_l.append(float(current_loss))
+                validate_l.append(float(validate_loss))
 
             except StopIteration:
                 break
@@ -191,8 +191,8 @@ def main(args):
         writer.add_scalar('Test/Loss', test_loss, epoch)
         writer.flush()
 
-        epoch_tr.append(sum(train_l) / batches)
-        epoch_val.append(sum(validate_l) / batches)
+        epoch_tr.append(train_loss)
+        epoch_val.append(test_loss)
 
         print('Epoch: {} /Loss: {} /val Loss: {}'.format(epoch, sum(train_l)/batches, sum(validate_l) / batches))
         # print('Epoch: {} /Loss: {}'.format(epoch, current_loss))

@@ -148,6 +148,8 @@ class MyParticleNetwork(torch.nn.Module):
             torch.ones_like(self.conv0_fluid.nns.neighbors_index,
                             dtype=torch.float32),
             self.conv0_fluid.nns.neighbors_row_splits)
+        if len(self.conv0_fluid.nns.neighbors_index) == 0:
+            self.num_fluid_neighbors = torch.zeros(self.conv0_fluid.nns.neighbors_row_splits.size()[0]-1)
 
         self.last_features = self.ans_convs[-2]
 

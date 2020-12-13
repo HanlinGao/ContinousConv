@@ -22,8 +22,7 @@
 		"particleAttributes": "velocity",
 		"renderWalls": 1,
 		"boundaryHandlingMethod": 0,
-		"enableVTKExport": true,
-		"dataExportFPS": 2
+		"enableVTKExport": true
 	},
 	"Materials": [
 		{
@@ -56,11 +55,11 @@
 		{
 			"id": "Fluid",
 			"denseMode": 0,
-			"start": [-0.05, 0.0, 0.0],
+			"start": [-0.05, 0, 0],
 			"end": [0.05, 0.05, 0.05],
 			"translation": [0,0,0],
 			"scale": [2, 2, 2],
-			"initialVelocity": [-5.0, -5.0, 0.0]
+			"initialVelocity": [-2.0, 0.0, 0.0]
 		}
 	]
 }

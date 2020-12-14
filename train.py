@@ -168,7 +168,9 @@ def main(args):
     epoch_val = []
 
     # start training
+    count = 0
     for epoch in range(args.num_epochs):
+        count += 1
         train_l = []
         validate_l = []
         train_iter = iter(DataLoader(dataset, batch_size=args.batch_size, shuffle=True, drop_last=True))
@@ -204,9 +206,12 @@ def main(args):
             model_name = args.model_name[:index]
         else:
             model_name = args.model_name
-        torch.save(model.state_dict(), os.path.join(args.model_path, model_name + '_epoch_' + str(epoch) +
-                                                    '_lr_' + str(args.lr) + '.pt'))
-        print("saving model...")
+        
+        if count / 10 == 0:
+            torch.save(model.state_dict(), os.path.join(args.model_path, model_name + '_epoch_' + str(epoch) +
+                                                        '_lr_' + str(args.lr) + '.pt'))
+            count = 0
+            print("saving model...")
 
     # loss plot
     plt.plot(np.arange(1, len(epoch_tr)+1, 1), epoch_tr, "blue")

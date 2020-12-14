@@ -60,7 +60,8 @@ def euclidean_distance(a, b, epsilon=1e-9):
 def loss_fn(pr_pos, gt_pos, num_fluid_neighbors):
     gamma = 0.5
     neighbor_scale = 1 / 40
-    importance = torch.exp(-neighbor_scale * num_fluid_neighbors)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    importance = torch.exp(-neighbor_scale * num_fluid_neighbors).to(device)
     return torch.mean(importance *
                       euclidean_distance(pr_pos, gt_pos) ** gamma)
 

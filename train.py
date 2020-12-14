@@ -190,7 +190,8 @@ def main(args):
         epoch_tr.append(sum(train_l) / batches)
         epoch_val.append(sum(validate_l) / batches)
 
-        print('Epoch: {} /Loss: {} /val Loss: {}'.format(epoch, sum(train_l)/batches, sum(validate_l) / batches))
+        print('Epoch: {} /Loss: {} /val Loss: {} /lr: {}'.format(
+            epoch, sum(train_l)/batches, sum(validate_l) / batches, optimizer.state_dict()['param_groups'][0]['lr']))
         # print('Epoch: {} /Loss: {}'.format(epoch, current_loss))
 
         # early_stopping needs the validation loss to check if it has decresed,
@@ -201,18 +202,18 @@ def main(args):
         # if early_stopping.early_stop:
         #     print("Early stopping")
         #     break
-        if '_' in args.model_name:
-            index = args.model_name.find('_')
-            indexl = args.model_name.find('epoch_')
-            indexr = args.model_name.find('_lr_')
-            last_epoch = int(args.model_name[indexl + 6: indexr])
-            model_name = args.model_name[:index]
-            epoch_name = str(epoch + last_epoch)
-        else:
-            model_name = args.model_name
-            epoch_name = str(epoch)
 
         if count / 10 == 0:
+            if '_' in args.model_name:
+                index = args.model_name.find('_')
+                indexl = args.model_name.find('epoch_')
+                indexr = args.model_name.find('_lr_')
+                last_epoch = int(args.model_name[indexl + 6: indexr])
+                model_name = args.model_name[:index]
+                epoch_name = str(epoch + last_epoch)
+            else:
+                model_name = args.model_name
+                epoch_name = str(epoch)
             torch.save(model.state_dict(), os.path.join(args.model_path, model_name + '_epoch_' + str(epoch_name) +
                                                         '_lr_' + str(args.lr) + '.pt'))
             count = 0

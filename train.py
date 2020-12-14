@@ -148,7 +148,7 @@ def main(args):
     optimizer = torch.optim.Adam(model.parameters(),
                                  lr=args.lr,
                                  eps=1e-6)
-    ExpLr = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.98)
+    # ExpLr = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.98)
     if os.path.isfile(os.path.join(args.model_path, args.model_name + '.pt')):
         print("load model....")
         model.load_state_dict(torch.load(os.path.join(args.model_path, args.model_name + '.pt')))
@@ -184,7 +184,7 @@ def main(args):
             except StopIteration:
                 break
 
-        ExpLr.step()
+        # ExpLr.step()
         epoch_tr.append(sum(train_l) / batches)
         epoch_val.append(sum(validate_l) / batches)
 

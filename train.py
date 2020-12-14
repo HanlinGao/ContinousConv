@@ -203,12 +203,17 @@ def main(args):
         #     break
         if '_' in args.model_name:
             index = args.model_name.find('_')
+            indexl = args.model_name.find('epoch_')
+            indexr = args.model_name.find('_lr_')
+            last_epoch = int(args.model_name[indexl + 6: indexr])
             model_name = args.model_name[:index]
+            epoch_name = str(epoch + last_epoch)
         else:
             model_name = args.model_name
-        
+            epoch_name = str(epoch)
+
         if count / 10 == 0:
-            torch.save(model.state_dict(), os.path.join(args.model_path, model_name + '_epoch_' + str(epoch) +
+            torch.save(model.state_dict(), os.path.join(args.model_path, model_name + '_epoch_' + str(epoch_name) +
                                                         '_lr_' + str(args.lr) + '.pt'))
             count = 0
             print("saving model...")

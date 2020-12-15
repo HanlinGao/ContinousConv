@@ -203,7 +203,7 @@ def main(args):
         #     print("Early stopping")
         #     break
 
-        if count / 10 == 0:
+        if count % 10 == 0:
             if '_' in args.model_name:
                 index = args.model_name.find('_')
                 indexl = args.model_name.find('epoch_')

@@ -2,7 +2,7 @@
 import argparse
 import numpy as np
 import torch
-from net import MyParticleNetwork
+from simpleNet import MyParticleNetwork
 import matplotlib.pyplot as plt
 import os
 import pickle
@@ -45,9 +45,10 @@ def euclidean_distance(a, b, epsilon=1e-9):
 
 
 def loss_fn(pr_pos, gt_pos, num_fluid_neighbors):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     gamma = 0.5
     neighbor_scale = 1 / 40
-    importance = torch.exp(-neighbor_scale * num_fluid_neighbors)
+    importance = torch.exp(-neighbor_scale * num_fluid_neighbors).to(device)
     return torch.mean(importance *
                       euclidean_distance(pr_pos, gt_pos) ** gamma)
 
@@ -107,7 +108,7 @@ def main(args):
 
     # define device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print("Using device: ", device)
+
     # load dataset
     # dataset = MyDataset(os.path.join(args.dataset_path, args.train_set + '.txt'), 200).dataset
     # testset = MyDataset(os.path.join(args.dataset_path, args.validate_set + '.txt'), 200).dataset
@@ -137,7 +138,8 @@ def main(args):
 
     if os.path.isfile(os.path.join(args.model_path, args.model_name + '.pt')):
         print("load model....")
-        model.load_state_dict(torch.load(os.path.join(args.model_path, args.model_name + '.pt')))
+    # model.load_state_dict(torch.load(os.path.join(args.model_path, args.model_name + '.pt')))
+    # model.load_state_dict(torch.load("pretrained_model_weights.pt"))
 
     # initialize the early_stopping object
     # early_stopping = EarlyStopping(patience=100, verbose=True, path=os.path.join(args.model_path, args.model_name + '.pt'))
@@ -145,7 +147,7 @@ def main(args):
     # get batches and steps
     # batches = toBatch(dataset, args.batch_size, device)
     # validates = toBatch(valset, args.batch_size, device)
-
+    # ExpLr = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.98)
     batches = len(dataset) // args.batch_size + 1
     print('Done.')
     # total_batches = len(batches)
@@ -164,12 +166,13 @@ def main(args):
                 batch = (poses, vels, label1s, label2s)
                 current_loss = train(model, optimizer, batch, box_data)
                 validate_loss = validate(model, validate_data, box_data)
-                train_l.append(current_loss)
-                validate_l.append(validate_loss)
+                train_l.append(float(current_loss))
+                validate_l.append(float(validate_loss))
 
             except StopIteration:
                 break
 
+        # ExpLr.step()
         epoch_tr.append(sum(train_l) / batches)
         epoch_val.append(sum(validate_l) / batches)
 
@@ -200,22 +203,22 @@ def main(args):
     plt.ylabel('loss')
     plt.show()
 
-    plt.savefig(str(datetime.date.today().month) + str(datetime.date.today().day) + 'epoch_' + str(args.num_epochs) + '_lr_' + str(args.lr) + '.png')
+    plt.savefig("train"+str(datetime.date.today().month) + str(datetime.date.today().day) + 'epoch_' + str(args.num_epochs) + '_lr_' + str(args.lr) + '.png')
     print("loss plot saved")
     print("Finished, model saved")
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str, default='continue/', help='path for saving trained models')
-    parser.add_argument('--dataset_path', type=str, default='dataset/input_train', help='apic2d dataset')
-    parser.add_argument('--train_set', type=str, default='train_10p_long2', help='path for train set')
-    parser.add_argument('--box_data', type=str, default='box_train', help='boundary')
-    parser.add_argument('--validate_set', type=str, default='val1', help='path for validate set')
+    parser.add_argument('--model_path', type=str, default='model_3p_bottom/', help='path for saving trained models')
+    parser.add_argument('--dataset_path', type=str, default='dataset/input_train', help='dataset')
+    parser.add_argument('--train_set', type=str, default='3p_bottom', help='path for train set')
+    parser.add_argument('--box_data', type=str, default='box_train_4wall', help='boundary')
+    parser.add_argument('--validate_set', type=str, default='horizontal_4', help='path for validate set')
     # parser.add_argument('--time_step', type=str, default=200, help='nums of time step')
     # Model parameters
     parser.add_argument('--num_epochs', type=int, default=1000)
-    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--batch_size', type=int, default=16)
     parser.add_argument('--model_name', type=str, default=str(datetime.date.today().month) + str(datetime.date.today().day))
     parser.add_argument('--lr', type=float, default=0.001)
     args = parser.parse_args()

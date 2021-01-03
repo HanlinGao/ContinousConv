@@ -2,7 +2,7 @@
 import argparse
 import numpy as np
 import torch
-from simpleNet import MyParticleNetwork
+from net import MyParticleNetwork
 import matplotlib.pyplot as plt
 import os
 import pickle
@@ -47,7 +47,8 @@ def euclidean_distance(a, b, epsilon=1e-9):
 def loss_fn(pr_pos, gt_pos, num_fluid_neighbors):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     gamma = 0.5
-    neighbor_scale = 1 / 40
+    # neighbor_scale = 1 / 40
+    neighbor_scale = 1
     importance = torch.exp(-neighbor_scale * num_fluid_neighbors).to(device)
     return torch.mean(importance *
                       euclidean_distance(pr_pos, gt_pos) ** gamma)
@@ -136,10 +137,11 @@ def main(args):
                                  lr=args.lr,
                                  eps=1e-6)
 
-    if os.path.isfile(os.path.join(args.model_path, args.model_name + '.pt')):
-        print("load model....")
+    # if os.path.isfile(os.path.join(args.model_path, args.model_name + '.pt')):
+    #     print("load model " + args.model_path + args.model_name + '.pt')
     # model.load_state_dict(torch.load(os.path.join(args.model_path, args.model_name + '.pt')))
-    # model.load_state_dict(torch.load("pretrained_model_weights.pt"))
+    model.load_state_dict(torch.load("models/1223_epoch_999_lr_0.001.pt"))
+    print("load model " + "models/1223_epoch_999_lr_0.001.pt")
 
     # initialize the early_stopping object
     # early_stopping = EarlyStopping(patience=100, verbose=True, path=os.path.join(args.model_path, args.model_name + '.pt'))
@@ -149,7 +151,7 @@ def main(args):
     # validates = toBatch(valset, args.batch_size, device)
     # ExpLr = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.98)
     batches = len(dataset) // args.batch_size + 1
-    print('Done.')
+    print('Done. Start training.')
     # total_batches = len(batches)
 
     epoch_tr = []
@@ -194,7 +196,7 @@ def main(args):
             model_name = args.model_name
         torch.save(model.state_dict(), os.path.join(args.model_path, model_name + '_epoch_' + str(epoch) +
                                                     '_lr_' + str(args.lr) + '.pt'))
-        print("saving model...")
+        print("Saving model...")
 
     # loss plot
     plt.plot(np.arange(1, len(epoch_tr)+1, 1), epoch_tr, "blue")
@@ -204,17 +206,17 @@ def main(args):
     plt.show()
 
     plt.savefig("train"+str(datetime.date.today().month) + str(datetime.date.today().day) + 'epoch_' + str(args.num_epochs) + '_lr_' + str(args.lr) + '.png')
-    print("loss plot saved")
+    print("Loss plot saved")
     print("Finished, model saved")
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str, default='model_3p_bottom/', help='path for saving trained models')
-    parser.add_argument('--dataset_path', type=str, default='dataset/input_train', help='dataset')
-    parser.add_argument('--train_set', type=str, default='3p_bottom', help='path for train set')
-    parser.add_argument('--box_data', type=str, default='box_train_4wall', help='boundary')
-    parser.add_argument('--validate_set', type=str, default='horizontal_4', help='path for validate set')
+    parser.add_argument('--model_path', type=str, default='models/', help='path for saving trained models')
+    parser.add_argument('--dataset_path', type=str, default='dataset/input', help='apic2d dataset')
+    parser.add_argument('--train_set', type=str, default='whole-100', help='path for train set')
+    parser.add_argument('--box_data', type=str, default='box_train', help='boundary')
+    parser.add_argument('--validate_set', type=str, default='bottom-10-eval', help='path for validate set')
     # parser.add_argument('--time_step', type=str, default=200, help='nums of time step')
     # Model parameters
     parser.add_argument('--num_epochs', type=int, default=1000)

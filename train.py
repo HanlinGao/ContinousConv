@@ -140,8 +140,8 @@ def main(args):
     # if os.path.isfile(os.path.join(args.model_path, args.model_name + '.pt')):
     #     print("load model " + args.model_path + args.model_name + '.pt')
     # model.load_state_dict(torch.load(os.path.join(args.model_path, args.model_name + '.pt')))
-    model.load_state_dict(torch.load("models/1223_epoch_999_lr_0.001.pt"))
-    print("load model " + "models/1223_epoch_999_lr_0.001.pt")
+#     model.load_state_dict(torch.load("models/1223_epoch_999_lr_0.001.pt"))
+#     print("load model " + "models/1223_epoch_999_lr_0.001.pt")
 
     # initialize the early_stopping object
     # early_stopping = EarlyStopping(patience=100, verbose=True, path=os.path.join(args.model_path, args.model_name + '.pt'))
@@ -219,7 +219,7 @@ if __name__ == '__main__':
     parser.add_argument('--validate_set', type=str, default='bottom-10-eval', help='path for validate set')
     # parser.add_argument('--time_step', type=str, default=200, help='nums of time step')
     # Model parameters
-    parser.add_argument('--num_epochs', type=int, default=1000)
+    parser.add_argument('--num_epochs', type=int, default=3000)
     parser.add_argument('--batch_size', type=int, default=16)
     parser.add_argument('--model_name', type=str, default=str(datetime.date.today().month) + str(datetime.date.today().day))
     parser.add_argument('--lr', type=float, default=0.001)

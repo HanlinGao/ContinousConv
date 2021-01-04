@@ -53,6 +53,8 @@ def run_sim_torch(box_file, fluids_file, output_file, weight_path, num_step):
                           torch.from_numpy(vel).float().to(device), None, box, box_normals)
 
                 pos, vel = model(inputs)
+                pos[:, -1] = 0.0
+                vel[:, -1] = 0.0
                 pos = pos.cpu().numpy()
                 vel = vel.cpu().numpy()
 

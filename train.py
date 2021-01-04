@@ -75,11 +75,16 @@ def train(model, optimizer, batch, box_data):
         ])
 
         pr_pos1, pr_vel1 = model(inputs)
+        pr_pos1[:, -1] = 0.0
+        pr_vel1[:, -1] = 0.0
+
         l = 0.5 * loss_fn(pr_pos1, batch[2][batch_i], model.num_fluid_neighbors)
 
         inputs = (pr_pos1, pr_vel1, None, box_data[0], box_data[1])
         pr_pos2, pr_vel2 = model(inputs)
 
+        pr_pos2[:, -1] = 0.0
+        pr_vel2[:, -1] = 0.0
         l += 0.5 * loss_fn(pr_pos2, batch[3][batch_i], model.num_fluid_neighbors)
 
         losses.append(l)

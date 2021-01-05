@@ -222,7 +222,7 @@ if __name__ == '__main__':
     parser.add_argument('--dataset_path', type=str, default='dataset/input', help='apic2d dataset')
     parser.add_argument('--train_set', type=str, default='pos-5', help='path for train set')
     parser.add_argument('--box_data', type=str, default='box_2layer', help='boundary')
-    parser.add_argument('--validate_set', type=str, default='pos-5-evl', help='path for validate set')
+    parser.add_argument('--validate_set', type=str, default='pos-5-eval', help='path for validate set')
     # parser.add_argument('--time_step', type=str, default=200, help='nums of time step')
     # Model parameters
     parser.add_argument('--num_epochs', type=int, default=1000)

@@ -8,6 +8,7 @@ import os
 import pickle
 from torch.utils.data import Dataset, DataLoader
 import datetime
+from torch.utils.tensorboard import SummaryWriter
 
 
 # def toBatch(Dataset, batchsize, device):
@@ -105,11 +106,14 @@ def validate(model, valset, box_data):
             ])
 
             pr_pos1, pr_vel1 = model(inputs)
+            pr_pos1[:, -1] = 0.0
+            pr_vel1[:, -1] = 0.0
             l = 0.5 * loss_fn(pr_pos1, valset[batch_i][2], model.num_fluid_neighbors)
 
             inputs = (pr_pos1, pr_vel1, None, box_data[0], box_data[1])
             pr_pos2, pr_vel2 = model(inputs)
-
+            pr_pos2[:, -1] = 0.0
+            pr_vel2[:, -1] = 0.0
             l += 0.5 * loss_fn(pr_pos2, valset[batch_i][3], model.num_fluid_neighbors)
 
             losses.append(l)
@@ -172,31 +176,38 @@ def main(args):
     epoch_tr = []
     epoch_val = []
 
+    writer = SummaryWriter(f'Logs/')
     # start training
-    count = 0
+    # count = 0
     for epoch in range(args.num_epochs):
-        count += 1
-        train_l = []
-        validate_l = []
-        train_iter = iter(DataLoader(dataset, batch_size=args.batch_size, shuffle=True, drop_last=True))
+        # count += 1
+        # train_l = []
+        # validate_l = []
+        train_iter = iter(DataLoader(dataset, batch_size=args.batch_size, shuffle=True))
         for num_batch in range(batches):
             try:
                 poses, vels, label1s, label2s = next(train_iter)
                 batch = (poses, vels, label1s, label2s)
                 current_loss = train(model, optimizer, batch, box_data)
                 validate_loss = validate(model, validate_data, box_data)
-                train_l.append(float(current_loss))
-                validate_l.append(float(validate_loss))
+
+                iteration = (epoch - 1) * batches + num_batch
+                writer.add_scalars('epoch/loss', {'train': current_loss, 'valid': validate_loss}, iteration)
+                for name, weight in model.named_parameters():
+                    writer.add_histogram(f'{name}.grad', weight.grad, iteration)
+                # train_l.append(float(current_loss))
+                # validate_l.append(float(validate_loss))
 
             except StopIteration:
                 break
+        print("epoch", epoch, "train_loss: ", current_loss, "valid loss: ", validate_loss)
 
         # ExpLr.step()
-        epoch_tr.append(sum(train_l) / batches)
-        epoch_val.append(sum(validate_l) / batches)
+        # epoch_tr.append(sum(train_l) / batches)
+        # epoch_val.append(sum(validate_l) / batches)
 
-        print('Epoch: {} /Loss: {} /val Loss: {} /lr: {}'.format(
-            epoch, sum(train_l)/batches, sum(validate_l) / batches, optimizer.state_dict()['param_groups'][0]['lr']))
+        # print('Epoch: {} /Loss: {} /val Loss: {} /lr: {}'.format(
+        #     epoch, sum(train_l)/batches, sum(validate_l) / batches, optimizer.state_dict()['param_groups'][0]['lr']))
         # print('Epoch: {} /Loss: {}'.format(epoch, current_loss))
 
         # early_stopping needs the validation loss to check if it has decresed,
@@ -208,30 +219,29 @@ def main(args):
         #     print("Early stopping")
         #     break
 
-        if count % 10 == 0:
-            if '_' in args.model_name:
-                index = args.model_name.find('_')
-                indexl = args.model_name.find('epoch_')
-                indexr = args.model_name.find('_lr_')
-                last_epoch = int(args.model_name[indexl + 6: indexr])
-                model_name = args.model_name[:index]
-                epoch_name = str(epoch + last_epoch)
-            else:
-                model_name = args.model_name
-                epoch_name = str(epoch)
-            torch.save(model.state_dict(), os.path.join(args.model_path, model_name + '_epoch_' + str(epoch_name) +
-                                                        '_lr_' + str(args.lr) + '.pt'))
-            count = 0
-            print("saving model...")
+        # if count % 10 == 0:
+        if '_' in args.model_name:
+            index = args.model_name.find('_')
+            indexl = args.model_name.find('epoch_')
+            indexr = args.model_name.find('_lr_')
+            last_epoch = int(args.model_name[indexl + 6: indexr])
+            model_name = args.model_name[:index]
+            epoch_name = str(epoch + last_epoch)
+        else:
+            model_name = args.model_name
+            epoch_name = str(epoch)
+        torch.save(model.state_dict(), os.path.join(args.model_path, model_name + '_epoch_' + str(epoch_name) +
+                                                    '_lr_' + str(args.lr) + '.pt'))
+        print("saving model...")
 
     # loss plot
-    plt.plot(np.arange(1, len(epoch_tr)+1, 1), epoch_tr, "blue")
-    plt.plot(np.arange(1, len(epoch_val)+1, 1), epoch_val, "red")
-    plt.xlabel('epoch')
-    plt.ylabel('loss')
-    plt.show()
-    plt.savefig(args.train_set + str(datetime.date.today().month) + str(datetime.date.today().day) + 'epoch_' + str(args.num_epochs) + '_lr_' + str(args.lr) + '.png')
-    print("loss plot saved")
+    # plt.plot(np.arange(1, len(epoch_tr)+1, 1), epoch_tr, "blue")
+    # plt.plot(np.arange(1, len(epoch_val)+1, 1), epoch_val, "red")
+    # plt.xlabel('epoch')
+    # plt.ylabel('loss')
+    # plt.show()
+    # plt.savefig(args.train_set + str(datetime.date.today().month) + str(datetime.date.today().day) + 'epoch_' + str(args.num_epochs) + '_lr_' + str(args.lr) + '.png')
+    # print("loss plot saved")
     print("Finished, model saved")
 
 

@@ -176,7 +176,7 @@ def main(args):
     epoch_tr = []
     epoch_val = []
 
-    writer = SummaryWriter(f'Logs/')
+    writer = SummaryWriter(f'Logs/{args.train_set}')
     # start training
     # count = 0
     for epoch in range(args.num_epochs):

@@ -194,9 +194,9 @@ def main(args):
             except StopIteration:
                 break
 
-        print("epoch", epoch, "train_loss: ", current_loss, "valid loss: ", validate_loss)
+        print("epoch", epoch, "train_loss: ", float(current_loss), "valid loss: ", float(validate_loss))
 
-        writer.add_scalars('epoch/loss', {'train': current_loss, 'valid': validate_loss}, epoch)
+        writer.add_scalars('epoch/loss', {'train': float(current_loss), 'valid': float(validate_loss)}, epoch)
         for name, weight in model.named_parameters():
             m = re.search(r"\d", name)
             writer.add_histogram(f'{str(m.start())}/{name}.grad', weight.grad, epoch)

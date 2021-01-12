@@ -9,6 +9,7 @@ import pickle
 from torch.utils.data import Dataset, DataLoader
 import datetime
 from torch.utils.tensorboard import SummaryWriter
+import re
 
 
 # def toBatch(Dataset, batchsize, device):
@@ -76,16 +77,16 @@ def train(model, optimizer, batch, box_data):
         ])
 
         pr_pos1, pr_vel1 = model(inputs)
-        pr_pos1[:, -1] = 0.0
-        pr_vel1[:, -1] = 0.0
+        # pr_pos1[:, -1] = 0.0
+        # pr_vel1[:, -1] = 0.0
 
         l = 0.5 * loss_fn(pr_pos1, batch[2][batch_i], model.num_fluid_neighbors)
 
         inputs = (pr_pos1, pr_vel1, None, box_data[0], box_data[1])
         pr_pos2, pr_vel2 = model(inputs)
 
-        pr_pos2[:, -1] = 0.0
-        pr_vel2[:, -1] = 0.0
+        # pr_pos2[:, -1] = 0.0
+        # pr_vel2[:, -1] = 0.0
         l += 0.5 * loss_fn(pr_pos2, batch[3][batch_i], model.num_fluid_neighbors)
 
         losses.append(l)
@@ -106,14 +107,14 @@ def validate(model, valset, box_data):
             ])
 
             pr_pos1, pr_vel1 = model(inputs)
-            pr_pos1[:, -1] = 0.0
-            pr_vel1[:, -1] = 0.0
+            # pr_pos1[:, -1] = 0.0
+            # pr_vel1[:, -1] = 0.0
             l = 0.5 * loss_fn(pr_pos1, valset[batch_i][2], model.num_fluid_neighbors)
 
             inputs = (pr_pos1, pr_vel1, None, box_data[0], box_data[1])
             pr_pos2, pr_vel2 = model(inputs)
-            pr_pos2[:, -1] = 0.0
-            pr_vel2[:, -1] = 0.0
+            # pr_pos2[:, -1] = 0.0
+            # pr_vel2[:, -1] = 0.0
             l += 0.5 * loss_fn(pr_pos2, valset[batch_i][3], model.num_fluid_neighbors)
 
             losses.append(l)
@@ -190,17 +191,17 @@ def main(args):
                 batch = (poses, vels, label1s, label2s)
                 current_loss = train(model, optimizer, batch, box_data)
                 validate_loss = validate(model, validate_data, box_data)
-
-                iteration = (epoch - 1) * batches + num_batch
-                writer.add_scalars('epoch/loss', {'train': current_loss, 'valid': validate_loss}, iteration)
-                for name, weight in model.named_parameters():
-                    writer.add_histogram(f'{name}.grad', weight.grad, iteration)
-                # train_l.append(float(current_loss))
-                # validate_l.append(float(validate_loss))
-
             except StopIteration:
                 break
+
         print("epoch", epoch, "train_loss: ", current_loss, "valid loss: ", validate_loss)
+
+        writer.add_scalars('epoch/loss', {'train': current_loss, 'valid': validate_loss}, epoch)
+        for name, weight in model.named_parameters():
+            m = re.search(r"\d", name)
+            writer.add_histogram(f'{str(m.start())}/{name}.grad', weight.grad, epoch)
+            # train_l.append(float(current_loss))
+            # validate_l.append(float(validate_loss))
 
         # ExpLr.step()
         # epoch_tr.append(sum(train_l) / batches)

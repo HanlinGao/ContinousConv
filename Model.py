@@ -4,6 +4,7 @@ import open3d.ml.torch as ml3d
 import numpy as np
 import math
 
+
 class MyParticleNetwork(torch.nn.Module):
 
     def __init__(

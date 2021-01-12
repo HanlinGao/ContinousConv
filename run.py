@@ -36,9 +36,6 @@ def run_sim_torch(box_file, fluids_file, output_file, weight_path, num_step):
     pos = np.empty(shape=(0, 3), dtype=np.float32)
     vel = np.empty_like(pos)
 
-    print(len(box))
-    print(box[:100])
-
     with open(output_file, 'wb') as f:
         for step in range(num_step):
             for point, velocities, range_ in fluids:
@@ -55,8 +52,8 @@ def run_sim_torch(box_file, fluids_file, output_file, weight_path, num_step):
                 pos, vel = model(inputs)
                 pos = pos.cpu().numpy()
                 vel = vel.cpu().numpy()
-                pos[:, -1] = 0.0
-                vel[:, -1] = 0.0
+                # pos[:, -1] = 0.0
+                # vel[:, -1] = 0.0
 
             # # remove out of bounds particles
             # if step % 10 == 0:
@@ -95,6 +92,7 @@ def main():
     print(args)
 
     return run_sim_torch(args.box_file, args.particle_file, args.output, args.weights, args.num_steps)
+
 
 if __name__ == '__main__':
     sys.exit(main())

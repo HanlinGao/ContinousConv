@@ -55,13 +55,13 @@ def run_sim_torch(box_file, fluids_file, output_file, weight_path, num_step):
                 # pos[:, -1] = 0.0
                 # vel[:, -1] = 0.0
 
-            # # remove out of bounds particles
-            # if step % 10 == 0:
-            #     print(step, 'num particles', pos.shape[0])
-            #     mask = pos[:, 1] > min_y
-            #     if np.count_nonzero(mask) < pos.shape[0]:
-            #         pos = pos[mask]
-            #         vel = vel[mask]
+            # remove out of bounds particles
+            if step % 10 == 0:
+                print(step, 'num particles', pos.shape[0])
+                mask = pos[:, 1] > min_y
+                if np.count_nonzero(mask) < pos.shape[0]:
+                    pos = pos[mask]
+                    vel = vel[mask]
 
 
 def main():

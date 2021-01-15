@@ -145,10 +145,11 @@ def main(args):
     model = create_model()
     model.to(device)
 
-    optimizer = torch.optim.Adam(model.parameters(),
-                                 lr=args.lr,
-                                 eps=1e-6)
-
+#     optimizer = torch.optim.Adam(model.parameters(),
+#                                  lr=args.lr,
+#                                  eps=1e-6)
+#TODO
+    optimizer = swats.SWATS(model.parameters())
     # if os.path.isfile(os.path.join(args.model_path, args.model_name + '.pt')):
     #     print("load model " + args.model_path + args.model_name + '.pt')
     # model.load_state_dict(torch.load(os.path.join(args.model_path, args.model_name + '.pt')))

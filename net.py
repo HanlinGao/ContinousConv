@@ -67,7 +67,8 @@ class MyParticleNetwork(torch.nn.Module):
         self.dense0_fluid = torch.nn.Linear(in_features=4 +
                                             other_feats_channels,
                                             out_features=self.layer_channels[0])
-        torch.nn.init.xavier_uniform_(self.dense0_fluid.weight)
+#         torch.nn.init.xavier_uniform_(self.dense0_fluid.weight)
+        torch.nn.init.kaiming_normal_(self.dense0_fluid.weight)
         torch.nn.init.zeros_(self.dense0_fluid.bias)
 
         self.convs = []
@@ -78,7 +79,8 @@ class MyParticleNetwork(torch.nn.Module):
                 in_ch *= 3
             out_ch = self.layer_channels[i]
             dense = torch.nn.Linear(in_features=in_ch, out_features=out_ch)
-            torch.nn.init.xavier_uniform_(dense.weight)
+#             torch.nn.init.xavier_uniform_(dense.weight)
+            torch.nn.init.kaiming_normal_(dense.weight)
             torch.nn.init.zeros_(dense.bias)
             setattr(self, 'dense{0}'.format(i), dense)
             conv = Conv(name='conv{0}'.format(i),

@@ -13,8 +13,8 @@ class MyParticleNetwork(torch.nn.Module):
         coordinate_mapping='ball_to_cube_volume_preserving',
         interpolation='linear',
         use_window=True,
-        particle_radius=0.5,
-        timestep=0.005,
+        particle_radius=0.025, # 0.5
+        timestep=0.02, #TODO:原网络是0.02///0.005
         other_feats_channels=0,
     ):
         super().__init__()
@@ -28,7 +28,7 @@ class MyParticleNetwork(torch.nn.Module):
         self.filter_extent = np.float32(self.radius_scale * 6 *
                                         self.particle_radius)
         self.timestep = timestep
-        gravity = torch.FloatTensor([0, -981, 0])
+        gravity = torch.FloatTensor([0, -9.81, 0])
         self.register_buffer('gravity', gravity)
 
         self._all_convs = []

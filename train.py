@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import swats
 import argparse
 import numpy as np
 import torch
@@ -153,7 +154,7 @@ def main(args):
     # if os.path.isfile(os.path.join(args.model_path, args.model_name + '.pt')):
     #     print("load model " + args.model_path + args.model_name + '.pt')
     # model.load_state_dict(torch.load(os.path.join(args.model_path, args.model_name + '.pt')))
-    model.load_state_dict(torch.load("model/pretrained_model_weights.pt"))
+    #model.load_state_dict(torch.load("model/pretrained_model_weights.pt"))
 
     # initialize the early_stopping object
     # early_stopping = EarlyStopping(patience=100, verbose=True, path=os.path.join(args.model_path, args.model_name + '.pt'))

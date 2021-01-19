@@ -199,7 +199,7 @@ def main(args):
         writer.add_scalars('epoch/loss', {'train': float(current_loss), 'valid': float(validate_loss)}, epoch)
         for name, weight in model.named_parameters():
             m = re.search(r"\d", name)
-            writer.add_histogram(f'{str(name[m.start()])}/{name}', weight, epoch)
+            writer.add_histogram(f'{str(name[m.start()])}/{name}.grad', weight.grad, epoch)
             # train_l.append(float(current_loss))
             # validate_l.append(float(validate_loss))
 

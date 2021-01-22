@@ -200,6 +200,7 @@ def main(args):
         for name, weight in model.named_parameters():
             m = re.search(r"\d", name)
             writer.add_histogram(f'{str(name[m.start()])}/{name}.grad', weight.grad, epoch)
+            writer.add_histogram(f'{str(name[m.start()])}/{name}.weight', weight, epoch)
             # train_l.append(float(current_loss))
             # validate_l.append(float(validate_loss))
 

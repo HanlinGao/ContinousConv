@@ -3,7 +3,6 @@ import torch.nn.functional as F
 import open3d.ml.torch as ml3d
 import numpy as np
 import logging
-logging.basicConfig(level=logging.DEBUG)
 
 
 class MyParticleNetwork(torch.nn.Module):
@@ -123,7 +122,7 @@ class MyParticleNetwork(torch.nn.Module):
                            box_feats,
                            fixed_radius_search_hash_table=None):
         """Expects that the pos and vel has already been updated with gravity and velocity"""
-
+        logging.basicConfig(level=logging.DEBUG)
         # compute the extent of the filters (the diameter)
         filter_extent = torch.tensor(self.filter_extent)
 

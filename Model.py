@@ -147,8 +147,7 @@ class MyParticleNetwork(torch.nn.Module):
             for conv, dense in zip(self.convs, self.denses):
                 # logging.info('output of layer %s, %s', str(i), str(self.ans_convs[-1]))
                 out_f.write("output of layer " + str(i))
-                np.savetxt(out_f, self.ans_convs[-1].numpy())
-
+                np.savetxt(out_f, torch.Tensor.cpu(self.ans_convs[-1]).numpy())
 
                 inp_feats = F.relu(self.ans_convs[-1])
                 ans_conv = conv(inp_feats, pos, pos, filter_extent)
@@ -177,7 +176,7 @@ class MyParticleNetwork(torch.nn.Module):
             self.pos_correction = (1.0 / 128) * self.ans_convs[-1]
             self.pos_correction[:, 2] = 0
             out_f.write("pos_correction")
-            np.savetxt(out_f, self.pos_correction.numpy())
+            np.savetxt(out_f, torch.Tensor.cpu(self.pos_correction).numpy())
 
             # logging.debug('pos_correction', self.pos_correction)
             # logging.info('pos_correction %s', str(self.pos_correction))

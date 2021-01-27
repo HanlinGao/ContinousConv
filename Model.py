@@ -122,7 +122,7 @@ class MyParticleNetwork(torch.nn.Module):
                            box_feats,
                            fixed_radius_search_hash_table=None):
         """Expects that the pos and vel has already been updated with gravity and velocity"""
-        logging.basicConfig(level=logging.DEBUG)
+        # logging.basicConfig(level=logging.DEBUG)
         # compute the extent of the filters (the diameter)
         filter_extent = torch.tensor(self.filter_extent)
 
@@ -140,7 +140,11 @@ class MyParticleNetwork(torch.nn.Module):
         feats = torch.cat([self.ans_conv0_obstacle, self.ans_conv0_fluid, self.ans_dense0_fluid], axis=-1)
 
         self.ans_convs = [feats]
+        print('network begin')
         for conv, dense in zip(self.convs, self.denses):
+            print('before enter next layer')
+            print(self.ans_convs[-1])
+
             inp_feats = F.relu(self.ans_convs[-1])
             ans_conv = conv(inp_feats, pos, pos, filter_extent)
             ans_dense = dense(inp_feats)
@@ -149,7 +153,7 @@ class MyParticleNetwork(torch.nn.Module):
             else:
                 ans = ans_conv + ans_dense
             self.ans_convs.append(ans)
-
+        print('network end')
 
         # compute the number of fluid neighbors.
         # this info is used in the loss function during training.

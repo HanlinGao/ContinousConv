@@ -143,7 +143,7 @@ def main(args):
 
     # print('dataset[0]', dataset[0][0])
     print('dataset length: ', len(dataset))
-    logging.basicConfig(filename='hidden_layer.log', level=logging.DEBUG)
+    logging.basicConfig(filename='hidden_layer.log', filemode='a', level=logging.DEBUG)
     logging.info('Log Started')
 
     validate_data = []

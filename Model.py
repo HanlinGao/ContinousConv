@@ -162,7 +162,8 @@ class MyParticleNetwork(torch.nn.Module):
         if len(self.num_fluid_neighbors) == 0:
             self.num_fluid_neighbors = torch.zeros_like(
                 torch.empty(self.conv0_fluid.nns.neighbors_row_splits.size()[0] - 1))
-
+        print('num_fluid_neighbors')
+        print(self.num_fluid_neighbors)
         self.last_features = self.ans_convs[-2]
 
         # scale to better match the scale of the output distribution

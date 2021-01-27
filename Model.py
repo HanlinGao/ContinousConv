@@ -2,7 +2,9 @@ import torch
 import torch.nn.functional as F
 import open3d.ml.torch as ml3d
 import numpy as np
-import math
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 class MyParticleNetwork(torch.nn.Module):
@@ -130,10 +132,7 @@ class MyParticleNetwork(torch.nn.Module):
         if not other_feats is None:
             fluid_feats.append(other_feats)
         fluid_feats = torch.cat(fluid_feats, axis=-1)
-        print('pos')
-        print(pos)
-        print('box')
-        print(box)
+
         self.ans_conv0_fluid = self.conv0_fluid(fluid_feats, pos, pos,
                                                 filter_extent)
         self.ans_dense0_fluid = self.dense0_fluid(fluid_feats)
@@ -144,8 +143,6 @@ class MyParticleNetwork(torch.nn.Module):
 
         self.ans_convs = [feats]
         for conv, dense in zip(self.convs, self.denses):
-            print('output of last layer....')
-            print(self.ans_convs[-1])
             inp_feats = F.relu(self.ans_convs[-1])
             ans_conv = conv(inp_feats, pos, pos, filter_extent)
             ans_dense = dense(inp_feats)
@@ -154,7 +151,8 @@ class MyParticleNetwork(torch.nn.Module):
             else:
                 ans = ans_conv + ans_dense
             self.ans_convs.append(ans)
-        print("end of the network")
+
+
         # compute the number of fluid neighbors.
         # this info is used in the loss function during training.
         self.num_fluid_neighbors = ml3d.ops.reduce_subarrays_sum(
@@ -165,14 +163,13 @@ class MyParticleNetwork(torch.nn.Module):
         if len(self.num_fluid_neighbors) == 0:
             self.num_fluid_neighbors = torch.zeros_like(
                 torch.empty(self.conv0_fluid.nns.neighbors_row_splits.size()[0] - 1))
-        print('num_fluid_neighbors')
-        print(self.num_fluid_neighbors)
+
         self.last_features = self.ans_convs[-2]
 
         # scale to better match the scale of the output distribution
         self.pos_correction = (1.0 / 128) * self.ans_convs[-1]
-        print('pos_correction')
-        print(self.pos_correction)
+        self.pos_correction[:, 2] = 0
+        logging.debug('pos_correction', self.pos_correction)
         return self.pos_correction
 
     def forward(self, inputs, fixed_radius_search_hash_table=None):

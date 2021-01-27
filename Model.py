@@ -19,7 +19,8 @@ class MyParticleNetwork(torch.nn.Module):
         other_feats_channels=0,
     ):
         super().__init__()
-        self.layer_channels = [32, 64, 64, 3]
+        # self.layer_channels = [32, 64, 64, 3]
+        self.layer_channels = [32, 3]
         self.kernel_size = kernel_size
         self.radius_scale = radius_scale
         self.coordinate_mapping = coordinate_mapping
@@ -140,10 +141,10 @@ class MyParticleNetwork(torch.nn.Module):
         feats = torch.cat([self.ans_conv0_obstacle, self.ans_conv0_fluid, self.ans_dense0_fluid], axis=-1)
 
         self.ans_convs = [feats]
-        print('network begin')
+        # print('network begin')
+        i = 0
         for conv, dense in zip(self.convs, self.denses):
-            print('before enter next layer')
-            print(self.ans_convs[-1])
+            print('output of layer', i, self.ans_convs[-1])
 
             inp_feats = F.relu(self.ans_convs[-1])
             ans_conv = conv(inp_feats, pos, pos, filter_extent)
@@ -153,7 +154,7 @@ class MyParticleNetwork(torch.nn.Module):
             else:
                 ans = ans_conv + ans_dense
             self.ans_convs.append(ans)
-        print('network end')
+        # print('network end')
 
         # compute the number of fluid neighbors.
         # this info is used in the loss function during training.

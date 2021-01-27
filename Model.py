@@ -4,7 +4,6 @@ import open3d.ml.torch as ml3d
 import numpy as np
 import logging
 logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 
 class MyParticleNetwork(torch.nn.Module):
@@ -169,7 +168,7 @@ class MyParticleNetwork(torch.nn.Module):
         # scale to better match the scale of the output distribution
         self.pos_correction = (1.0 / 128) * self.ans_convs[-1]
         self.pos_correction[:, 2] = 0
-        logger.debug('pos_correction', self.pos_correction)
+        logging.debug('pos_correction', self.pos_correction)
         return self.pos_correction
 
     def forward(self, inputs, fixed_radius_search_hash_table=None):

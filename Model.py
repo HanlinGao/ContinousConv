@@ -142,44 +142,38 @@ class MyParticleNetwork(torch.nn.Module):
         self.ans_convs = [feats]
         # print('network begin')
 
-        with open('hidden_output.txt', 'a') as out_f:
-            i = 0
-            for conv, dense in zip(self.convs, self.denses):
-                # logging.info('output of layer %s, %s', str(i), str(self.ans_convs[-1]))
-                out_f.write("output of layer " + str(i))
-                np.savetxt(out_f, torch.Tensor.cpu(self.ans_convs[-1]).numpy())
+        for conv, dense in zip(self.convs, self.denses):
+            # logging.info('output of layer %s, %s', str(i), str(self.ans_convs[-1]))
 
-                inp_feats = F.relu(self.ans_convs[-1])
-                ans_conv = conv(inp_feats, pos, pos, filter_extent)
-                ans_dense = dense(inp_feats)
-                if ans_dense.shape[-1] == self.ans_convs[-1].shape[-1]:
-                    ans = ans_conv + ans_dense + self.ans_convs[-1]
-                else:
-                    ans = ans_conv + ans_dense
-                self.ans_convs.append(ans)
-            # print('network end')
+            inp_feats = F.relu(self.ans_convs[-1])
+            ans_conv = conv(inp_feats, pos, pos, filter_extent)
+            ans_dense = dense(inp_feats)
+            if ans_dense.shape[-1] == self.ans_convs[-1].shape[-1]:
+                ans = ans_conv + ans_dense + self.ans_convs[-1]
+            else:
+                ans = ans_conv + ans_dense
+            self.ans_convs.append(ans)
+        # print('network end')
 
-            # compute the number of fluid neighbors.
-            # this info is used in the loss function during training.
-            self.num_fluid_neighbors = ml3d.ops.reduce_subarrays_sum(
-                torch.ones_like(self.conv0_fluid.nns.neighbors_index,
-                                dtype=torch.float32),
-                self.conv0_fluid.nns.neighbors_row_splits)
+        # compute the number of fluid neighbors.
+        # this info is used in the loss function during training.
+        self.num_fluid_neighbors = ml3d.ops.reduce_subarrays_sum(
+            torch.ones_like(self.conv0_fluid.nns.neighbors_index,
+                            dtype=torch.float32),
+            self.conv0_fluid.nns.neighbors_row_splits)
 
-            if len(self.num_fluid_neighbors) == 0:
-                self.num_fluid_neighbors = torch.zeros_like(
-                    torch.empty(self.conv0_fluid.nns.neighbors_row_splits.size()[0] - 1))
+        if len(self.num_fluid_neighbors) == 0:
+            self.num_fluid_neighbors = torch.zeros_like(
+                torch.empty(self.conv0_fluid.nns.neighbors_row_splits.size()[0] - 1))
 
-            self.last_features = self.ans_convs[-2]
+        self.last_features = self.ans_convs[-2]
 
-            # scale to better match the scale of the output distribution
-            self.pos_correction = (1.0 / 128) * self.ans_convs[-1]
-            self.pos_correction[:, 2] = 0
-            out_f.write("pos_correction")
-            np.savetxt(out_f, torch.Tensor.cpu(self.pos_correction).numpy())
+        # scale to better match the scale of the output distribution
+        self.pos_correction = (1.0 / 128) * self.ans_convs[-1]
+        self.pos_correction[:, 2] = 0
 
-            # logging.debug('pos_correction', self.pos_correction)
-            # logging.info('pos_correction %s', str(self.pos_correction))
+        # logging.debug('pos_correction', self.pos_correction)
+        # logging.info('pos_correction %s', str(self.pos_correction))
         return self.pos_correction
 
     def forward(self, inputs, fixed_radius_search_hash_table=None):

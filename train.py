@@ -33,7 +33,7 @@ class MyDataset(torch.utils.data.Dataset):
         with open(datafile, 'rb') as f:
             while True:
                 try:
-                    self.dataset.extend(pickle.load(f)[20:25])
+                    self.dataset.extend(pickle.load(f))
                 except:
                     break
 

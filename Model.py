@@ -144,7 +144,7 @@ class MyParticleNetwork(torch.nn.Module):
         # print('network begin')
         i = 0
         for conv, dense in zip(self.convs, self.denses):
-            print('output of layer', i, self.ans_convs[-1])
+            logging.info('output of layer', i, self.ans_convs[-1])
 
             inp_feats = F.relu(self.ans_convs[-1])
             ans_conv = conv(inp_feats, pos, pos, filter_extent)
@@ -173,7 +173,7 @@ class MyParticleNetwork(torch.nn.Module):
         self.pos_correction = (1.0 / 128) * self.ans_convs[-1]
         self.pos_correction[:, 2] = 0
         # logging.debug('pos_correction', self.pos_correction)
-        print('pos_correction', self.pos_correction)
+        logging.info('pos_correction', self.pos_correction)
         return self.pos_correction
 
     def forward(self, inputs, fixed_radius_search_hash_table=None):

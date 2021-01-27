@@ -167,7 +167,8 @@ class MyParticleNetwork(torch.nn.Module):
         # scale to better match the scale of the output distribution
         self.pos_correction = (1.0 / 128) * self.ans_convs[-1]
         self.pos_correction[:, 2] = 0
-        logging.debug('pos_correction', self.pos_correction)
+        # logging.debug('pos_correction', self.pos_correction)
+        print('pos_correction', self.pos_correction)
         return self.pos_correction
 
     def forward(self, inputs, fixed_radius_search_hash_table=None):

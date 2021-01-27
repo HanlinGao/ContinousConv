@@ -151,7 +151,7 @@ class MyParticleNetwork(torch.nn.Module):
             else:
                 ans = ans_conv + ans_dense
             self.ans_convs.append(ans)
-
+        print("end of the network")
         # compute the number of fluid neighbors.
         # this info is used in the loss function during training.
         self.num_fluid_neighbors = ml3d.ops.reduce_subarrays_sum(

@@ -143,8 +143,8 @@ def main(args):
 
     # print('dataset[0]', dataset[0][0])
     print('dataset length: ', len(dataset))
-    logging.basicConfig(filename='hidden_layer.log', filemode='a', level=logging.DEBUG)
-    logging.info('Log Started')
+    # logging.basicConfig(filename='hidden_layer.log', filemode='a', level=logging.DEBUG)
+    # logging.info('Log Started')
 
     validate_data = []
     for i in range(0, args.batch_size):
@@ -249,7 +249,7 @@ def main(args):
     # plt.savefig(args.train_set + str(datetime.date.today().month) + str(datetime.date.today().day) + 'epoch_' + str(args.num_epochs) + '_lr_' + str(args.lr) + '.png')
     # print("loss plot saved")
     print("Finished, model saved")
-    logging.info('Log Finished')
+    # logging.info('Log Finished')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

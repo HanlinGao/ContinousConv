@@ -26,7 +26,7 @@ class MyParticleNetwork(torch.nn.Module):
         self.interpolation = interpolation
         self.use_window = use_window
         self.particle_radius = particle_radius
-        self.filter_extent = np.float32(self.radius_scale * 3 *
+        self.filter_extent = np.float32(self.radius_scale * 6 *
                                         self.particle_radius)
         self.timestep = timestep
         gravity = torch.FloatTensor([0, -9.81, 0])

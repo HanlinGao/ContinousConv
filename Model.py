@@ -132,6 +132,8 @@ class MyParticleNetwork(torch.nn.Module):
         fluid_feats = torch.cat(fluid_feats, axis=-1)
         print('pos')
         print(pos)
+        print('box')
+        print(box)
         self.ans_conv0_fluid = self.conv0_fluid(fluid_feats, pos, pos,
                                                 filter_extent)
         self.ans_dense0_fluid = self.dense0_fluid(fluid_feats)

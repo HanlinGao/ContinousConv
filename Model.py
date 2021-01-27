@@ -12,7 +12,7 @@ class MyParticleNetwork(torch.nn.Module):
         radius_scale=1.5,
         coordinate_mapping='ball_to_cube_volume_preserving',
         interpolation='linear',
-        use_window=True,
+        use_window=False,
         particle_radius=0.025,
         timestep=0.02,
         other_feats_channels=0,
@@ -145,8 +145,8 @@ class MyParticleNetwork(torch.nn.Module):
         for conv, dense in zip(self.convs, self.denses):
             # logging.info('output of layer %s, %s', str(i), str(self.ans_convs[-1]))
 
-            # inp_feats = F.relu(self.ans_convs[-1])
-            inp_feats = torch.nn.LeakyReLU(self.ans_convs[-1])
+            inp_feats = F.relu(self.ans_convs[-1])
+            # inp_feats = torch.nn.LeakyReLU(self.ans_convs[-1])
             ans_conv = conv(inp_feats, pos, pos, filter_extent)
             ans_dense = dense(inp_feats)
             if ans_dense.shape[-1] == self.ans_convs[-1].shape[-1]:

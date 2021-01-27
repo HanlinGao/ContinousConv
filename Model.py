@@ -142,11 +142,11 @@ class MyParticleNetwork(torch.nn.Module):
         self.ans_convs = [feats]
         # print('network begin')
 
-        with open('hidden_output.txt', 'ab') as out_f:
+        with open('hidden_output.txt', 'a') as out_f:
             i = 0
             for conv, dense in zip(self.convs, self.denses):
                 # logging.info('output of layer %s, %s', str(i), str(self.ans_convs[-1]))
-                out_f.write(b"output of layer %s \n" % str(i))
+                out_f.write("output of layer " + str(i))
                 np.savetxt(out_f, self.ans_convs[-1].numpy())
 
 
@@ -176,7 +176,7 @@ class MyParticleNetwork(torch.nn.Module):
             # scale to better match the scale of the output distribution
             self.pos_correction = (1.0 / 128) * self.ans_convs[-1]
             self.pos_correction[:, 2] = 0
-            out_f.write(b"pos_correction \n")
+            out_f.write("pos_correction")
             np.savetxt(out_f, self.pos_correction.numpy())
 
             # logging.debug('pos_correction', self.pos_correction)

@@ -146,7 +146,7 @@ class MyParticleNetwork(torch.nn.Module):
             i = 0
             for conv, dense in zip(self.convs, self.denses):
                 # logging.info('output of layer %s, %s', str(i), str(self.ans_convs[-1]))
-                out_f.write(b"output of layer %s \n" % i)
+                out_f.write(b"output of layer %s \n" % str(i))
                 np.savetxt(out_f, self.ans_convs[-1].numpy())
 
 

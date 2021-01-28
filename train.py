@@ -102,21 +102,21 @@ def train(model, optimizer, batch, box_data):
 def validate(model, valset, box_data):
     with torch.no_grad():
         losses = []
-        for batch_i in range(len(valset)):
+        for batch_i in range(len(valset[0])):
             inputs = ([
-                valset[batch_i][0], valset[batch_i][1], None, box_data[0], box_data[1]
+                valset[0][batch_i], valset[1][batch_i], None, box_data[0], box_data[1]
             ])
 
             pr_pos1, pr_vel1 = model(inputs)
             # pr_pos1[:, -1] = 0.0
             # pr_vel1[:, -1] = 0.0
-            l = 0.5 * loss_fn(pr_pos1, valset[batch_i][2], model.num_fluid_neighbors)
+            l = 0.5 * loss_fn(pr_pos1, valset[2][batch_i], model.num_fluid_neighbors)
 
             inputs = (pr_pos1, pr_vel1, None, box_data[0], box_data[1])
             pr_pos2, pr_vel2 = model(inputs)
             # pr_pos2[:, -1] = 0.0
             # pr_vel2[:, -1] = 0.0
-            l += 0.5 * loss_fn(pr_pos2, valset[batch_i][3], model.num_fluid_neighbors)
+            l += 0.5 * loss_fn(pr_pos2, valset[3][batch_i], model.num_fluid_neighbors)
 
             losses.append(l)
 
@@ -146,10 +146,6 @@ def main(args):
     # logging.basicConfig(filename='hidden_layer.log', filemode='a', level=logging.DEBUG)
     # logging.info('Log Started')
 
-    validate_data = []
-    for i in range(0, args.batch_size):
-        validate_data.append(valset[i])
-
     with open(os.path.join(args.dataset_path, args.box_data + '.pkl'), 'rb') as f:
         box_data = pickle.load(f)  # include box_pos, box_normals
 
@@ -176,6 +172,9 @@ def main(args):
 
     batches = len(dataset) // args.batch_size + 1
     print('Done.')
+
+    val_iter = iter(DataLoader(dataset, batch_size=args.batch_size, shuffle=True))
+    validate_data = next(val_iter)
     # total_batches = len(batches)
 
     epoch_tr = []

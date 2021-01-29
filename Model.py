@@ -8,7 +8,7 @@ class MyParticleNetwork(torch.nn.Module):
 
     def __init__(
         self,
-        kernel_size=[3, 3, 3],
+        kernel_size=[4, 4, 4],
         radius_scale=1.5,
         coordinate_mapping='ball_to_cube_volume_preserving',
         interpolation='linear',

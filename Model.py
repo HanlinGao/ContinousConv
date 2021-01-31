@@ -28,7 +28,7 @@ class MyParticleNetwork(torch.nn.Module):
         self.particle_radius = particle_radius
         # self.filter_extent = np.float32(self.radius_scale * 6 *
         #                                 self.particle_radius)
-        self.filter_extent = np.float32(self.radius_scale * 6 * self.particle_radius)
+        self.filter_extent = np.float32(6 * self.particle_radius)
         self.timestep = timestep
         gravity = torch.FloatTensor([0, -9.81, 0])
         self.register_buffer('gravity', gravity)
@@ -146,8 +146,8 @@ class MyParticleNetwork(torch.nn.Module):
         for conv, dense in zip(self.convs, self.denses):
             # logging.info('output of layer %s, %s', str(i), str(self.ans_convs[-1]))
 
-            inp_feats = F.relu(self.ans_convs[-1])
-            # inp_feats = torch.nn.LeakyReLU(self.ans_convs[-1])
+            # inp_feats = F.relu(self.ans_convs[-1])
+            inp_feats = F.leaky_relu(self.ans_convs[-1])
             ans_conv = conv(inp_feats, pos, pos, filter_extent)
             ans_dense = dense(inp_feats)
             if ans_dense.shape[-1] == self.ans_convs[-1].shape[-1]:

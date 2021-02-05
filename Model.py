@@ -8,7 +8,7 @@ class MyParticleNetwork(torch.nn.Module):
 
     def __init__(
         self,
-        kernel_size=[3, 3, 3],
+        kernel_size=[4, 4, 4],
         radius_scale=1.5,
         coordinate_mapping='ball_to_cube_volume_preserving',
         interpolation='linear',
@@ -18,17 +18,17 @@ class MyParticleNetwork(torch.nn.Module):
         other_feats_channels=0,
     ):
         super().__init__()
-        # self.layer_channels = [32, 64, 64, 3]
-        self.layer_channels = [32, 3]
+        self.layer_channels = [32, 64, 64, 3]
+        # self.layer_channels = [32, 3]
         self.kernel_size = kernel_size
         self.radius_scale = radius_scale
         self.coordinate_mapping = coordinate_mapping
         self.interpolation = interpolation
         self.use_window = use_window
         self.particle_radius = particle_radius
-        # self.filter_extent = np.float32(self.radius_scale * 6 *
-        #                                 self.particle_radius)
-        self.filter_extent = np.float32(6 * self.particle_radius)
+        self.filter_extent = np.float32(self.radius_scale * 6 *
+                                        self.particle_radius)
+        # self.filter_extent = np.float32(6 * self.particle_radius)
         self.timestep = timestep
         gravity = torch.FloatTensor([0, -9.81, 0])
         self.register_buffer('gravity', gravity)
@@ -173,7 +173,7 @@ class MyParticleNetwork(torch.nn.Module):
 
         # scale to better match the scale of the output distribution
         self.pos_correction = (1.0 / 128) * self.ans_convs[-1]
-        self.pos_correction[:, 2] = 0
+        # self.pos_correction[:, 2] = 0
 
         # logging.debug('pos_correction', self.pos_correction)
         # logging.info('pos_correction %s', str(self.pos_correction))
